@@ -51,7 +51,7 @@ const Footer: React.FC = () => (
                 <a href="https://www.instagram.com/harubang_official?igsh=MWg5Nm1uN2lrcjltZQ==" target="_blank" rel="noopener noreferrer" className="text-harubang-ink-light hover:text-black transition-colors" aria-label="Instagram">
                     <Instagram size={24} />
                 </a>
-                <a href="#" target="_blank" rel="noopener noreferrer" className="text-harubang-ink-light hover:text-black transition-colors" aria-label="Kakao Talk">
+                <a href="http://pf.kakao.com/_xhvRUn" target="_blank" rel="noopener noreferrer" className="text-harubang-ink-light hover:text-black transition-colors" aria-label="Kakao Talk">
                     <KakaoIcon />
                 </a>
             </div>
