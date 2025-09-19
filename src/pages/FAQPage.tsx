@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ChevronDown } from 'lucide-react';
+import { ChevronDown, MessageCircle, Instagram } from 'lucide-react';
 
 // FAQ 데이터
 const faqData = [
@@ -9,7 +9,7 @@ const faqData = [
     answer: "'하루방'은 고객이 원하는 집의 조건을 신청서로 작성하면, 여러 공인중개사가 그에 맞는 최적의 매물 1건씩을 직접 제안하는 역제안 방식의 맞춤형 부동산 매칭 플랫폼입니다. 불필요한 발품과 허위 매물 걱정을 덜어드리는 것을 목표로 합니다.",
   },
   {
-    question: "기존 부동산 플랫폼과는 무엇이 다른가요?",
+    question: "기존 부동산 앱(직방, 다방)과는 무엇이 다른가요?",
     answer: "기존 앱이 수많은 매물을 나열하고 사용자가 직접 필터링하며 찾아야 하는 방식이라면, '하루방'은 정반대입니다. 고객님의 신청서를 보고 전문가인 중개사가 직접 조건에 맞는 매물을 선별하여 제안하기 때문에, 정보 과잉으로 인한 피로 없이 양질의 매물만 확인할 수 있습니다.",
   },
   {
@@ -87,6 +87,30 @@ const FAQPage: React.FC = () => {
             {faqData.map((item, index) => (
                 <FAQItem key={index} question={item.question} answer={item.answer} />
             ))}
+        </div>
+
+        {/* 추가 문의 섹션 */}
+        <div className="mt-20 text-center bg-harubang-sky p-10 rounded-xl">
+            <h2 className="text-2xl font-bold text-harubang-ink mb-3">찾으시는 답변이 없나요?</h2>
+            <p className="text-harubang-ink-light mb-6">추가적인 문의나 궁금한 점이 있다면 언제든지 편하게 연락주세요.</p>
+            <div className="flex justify-center items-center gap-4">
+                <a 
+                    href="http://pf.kakao.com/_xhvRUn" // 나중에 실제 카카오톡 채널 링크로 교체
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-2 bg-yellow-400 text-black font-bold py-2 px-5 rounded-full hover:bg-yellow-500 transition-colors"
+                >
+                    <MessageCircle className="w-5 h-5" /> 카카오톡으로 문의하기
+                </a>
+                <a 
+                    href="https://www.instagram.com/harubang_official?igsh=MWg5Nm1uN2lrcjltZQ==" // 나중에 실제 인스타그램 링크로 교체
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-2 bg-gray-800 text-white font-bold py-2 px-5 rounded-full hover:bg-gray-900 transition-colors"
+                >
+                    <Instagram className="w-5 h-5" /> 인스타그램 DM 보내기
+                </a>
+            </div>
         </div>
       </div>
     </div>
