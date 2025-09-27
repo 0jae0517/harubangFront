@@ -15,8 +15,11 @@ import EditAgentInfoPage from './pages/EditAgentInfoPage';
 import ProposalsPage from './pages/ProposalsPage';
 import ChatPage from './pages/ChatPage';
 import SignUpModal from './components/SignUpModal';
-// 새로 만든 매물 제안 페이지를 import 합니다.
 import SubmitProposalPage from './pages/SubmitProposalPage';
+import ForgotPasswordPage from './pages/ForgotPasswordPage';
+// 새로 만든 중개사 매물 관리 페이지들을 import 합니다.
+import AgentPropertiesPage from './pages/AgentPropertiesPage';
+import AddPropertyPage from './pages/AddPropertyPage';
 
 type UserRole = 'customer' | 'agent' | null;
 
@@ -89,7 +92,8 @@ const App: React.FC = () => {
           <Route path="about" element={<AboutPage />} />
           <Route path="apply" element={<ApplyPage />} />
           <Route path="faq" element={<FAQPage />} />
-          
+          <Route path="forgot-password" element={<ForgotPasswordPage />} />
+
           <Route path="mypage" element={isLoggedIn && userRole === 'customer' ? <MyPage /> : <Navigate to="/" />} />
           <Route path="mypage/edit" element={isLoggedIn && userRole === 'customer' ? <EditMyInfoPage /> : <Navigate to="/" />} />
           <Route path="proposals/:requestId" element={isLoggedIn && userRole === 'customer' ? <ProposalsPage /> : <Navigate to="/" />} />
@@ -97,8 +101,11 @@ const App: React.FC = () => {
           <Route path="agent/dashboard" element={isLoggedIn && userRole === 'agent' ? <AgentDashboardPage /> : <Navigate to="/" />} />
           <Route path="agent/request/:requestId" element={isLoggedIn && userRole === 'agent' ? <RequestDetailPage /> : <Navigate to="/" />} />
           <Route path="agent/profile/edit" element={isLoggedIn && userRole === 'agent' ? <EditAgentInfoPage /> : <Navigate to="/" />} />
-          {/* 중개사가 매물을 제안하는 페이지 라우트 추가 */}
           <Route path="agent/proposal/submit/:requestId" element={isLoggedIn && userRole === 'agent' ? <SubmitProposalPage /> : <Navigate to="/" />} />
+          {/* 중개사 매물 관리 페이지 라우트 추가 */}
+          <Route path="agent/properties" element={isLoggedIn && userRole === 'agent' ? <AgentPropertiesPage /> : <Navigate to="/" />} />
+          <Route path="agent/properties/add" element={isLoggedIn && userRole === 'agent' ? <AddPropertyPage /> : <Navigate to="/" />} />
+
         </Route>
         
         <Route path="/chat/:chatRoomId" element={<ChatLayout />}>

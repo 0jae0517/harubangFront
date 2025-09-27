@@ -1,12 +1,13 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { Link } from 'react-router-dom'; // Link를 import 합니다.
 import harubangLogo from '../assets/logo.png';
 
 interface LoginModalProps {
   isOpen: boolean;
   onClose: () => void;
   onLoginSuccess: (role: 'customer' | 'agent') => void;
-  onSignUpModalOpen: () => void; // 회원가입 모달을 열기 위한 함수
+  onSignUpModalOpen: () => void;
 }
 
 const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose, onLoginSuccess, onSignUpModalOpen }) => {
@@ -18,8 +19,8 @@ const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose, onLoginSuccess
   };
 
   const handleSignUpClick = () => {
-    onClose(); // 현재 로그인 모달을 닫고
-    onSignUpModalOpen(); // 회원가입 모달을 엽니다.
+    onClose();
+    onSignUpModalOpen();
   };
 
   const getTabClassName = (type: 'customer' | 'agent') => {
@@ -64,7 +65,8 @@ const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose, onLoginSuccess
                 <div><input type="password" placeholder="비밀번호" className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-harubang-blue" /></div>
                 <div className="flex items-center justify-between text-sm">
                     <label className="flex items-center gap-2 text-gray-500"><input type="checkbox" className="rounded border-gray-300 text-harubang-blue focus:ring-harubang-blue" /> 이메일 저장</label>
-                    <a href="#" className="font-medium text-harubang-blue hover:underline">비밀번호 찾기</a>
+                    {/* a 태그를 Link 컴포넌트로 변경하고, 클릭 시 모달을 닫도록 수정 */}
+                    <Link to="/forgot-password" onClick={onClose} className="font-medium text-harubang-blue hover:underline">비밀번호 찾기</Link>
                 </div>
                 <div><button type="submit" className="w-full bg-harubang-blue text-white font-bold py-3 rounded-lg hover:bg-harubang-blue-dark transition-colors">로그인</button></div>
             </form>
