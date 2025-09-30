@@ -15,9 +15,8 @@ import EditAgentInfoPage from './pages/EditAgentInfoPage';
 import ProposalsPage from './pages/ProposalsPage';
 import ChatPage from './pages/ChatPage';
 import SignUpModal from './components/SignUpModal';
-import SubmitProposalPage from './pages/SubmitProposalPage';
+// import SubmitProposalPage from './pages/SubmitProposalPage'; // 이제 사용하지 않으므로 삭제
 import ForgotPasswordPage from './pages/ForgotPasswordPage';
-// 새로 만든 중개사 매물 관리 페이지들을 import 합니다.
 import AgentPropertiesPage from './pages/AgentPropertiesPage';
 import AddPropertyPage from './pages/AddPropertyPage';
 
@@ -101,8 +100,8 @@ const App: React.FC = () => {
           <Route path="agent/dashboard" element={isLoggedIn && userRole === 'agent' ? <AgentDashboardPage /> : <Navigate to="/" />} />
           <Route path="agent/request/:requestId" element={isLoggedIn && userRole === 'agent' ? <RequestDetailPage /> : <Navigate to="/" />} />
           <Route path="agent/profile/edit" element={isLoggedIn && userRole === 'agent' ? <EditAgentInfoPage /> : <Navigate to="/" />} />
-          <Route path="agent/proposal/submit/:requestId" element={isLoggedIn && userRole === 'agent' ? <SubmitProposalPage /> : <Navigate to="/" />} />
-          {/* 중개사 매물 관리 페이지 라우트 추가 */}
+          {/* SubmitProposalPage 라우트를 삭제합니다. */}
+          {/* <Route path="agent/proposal/submit/:requestId" element={isLoggedIn && userRole === 'agent' ? <SubmitProposalPage /> : <Navigate to="/" />} /> */}
           <Route path="agent/properties" element={isLoggedIn && userRole === 'agent' ? <AgentPropertiesPage /> : <Navigate to="/" />} />
           <Route path="agent/properties/add" element={isLoggedIn && userRole === 'agent' ? <AddPropertyPage /> : <Navigate to="/" />} />
 
