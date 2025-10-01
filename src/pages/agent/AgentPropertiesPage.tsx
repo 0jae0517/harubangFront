@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { PlusCircle, Edit, Trash2, Building, Banknote, Square, Bath, Car, Home } from 'lucide-react';
+import { PlusCircle, Edit, Trash2, Building, Banknote, Square, Bath, Home } from 'lucide-react';
 
 // 임시 매물 데이터 (더 상세한 정보 포함)
 const mockProperties = [

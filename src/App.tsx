@@ -1,24 +1,34 @@
 import React, { useState } from 'react';
 import { Routes, Route, Outlet, Navigate } from 'react-router-dom';
+
+// --- Components ---
 import Header from './components/Header';
 import Footer from './components/Footer';
-import HomePage from './pages/HomePage';
-import AboutPage from './pages/AboutPage';
-import ApplyPage from './pages/ApplyPage';
-import FAQPage from './pages/FAQPage';
 import LoginModal from './components/LoginModal';
-import AgentDashboardPage from './pages/AgentDashboardPage';
-import RequestDetailPage from './pages/RequestDetailPage';
-import MyPage from './pages/MyPage';
-import EditMyInfoPage from './pages/EditMyInfoPage';
-import EditAgentInfoPage from './pages/EditAgentInfoPage';
-import ProposalsPage from './pages/ProposalsPage';
-import ChatPage from './pages/ChatPage';
 import SignUpModal from './components/SignUpModal';
-// import SubmitProposalPage from './pages/SubmitProposalPage'; // 이제 사용하지 않으므로 삭제
-import ForgotPasswordPage from './pages/ForgotPasswordPage';
-import AgentPropertiesPage from './pages/AgentPropertiesPage';
-import AddPropertyPage from './pages/AddPropertyPage';
+import SelectPropertyModal from './components/SelectPropertyModal';
+
+// --- Common Pages ---
+import HomePage from './pages/common/HomePage';
+import AboutPage from './pages/common/AboutPage';
+import ApplyPage from './pages/common/ApplyPage';
+import FAQPage from './pages/common/FAQPage';
+import ForgotPasswordPage from './pages/common/ForgotPasswordPage';
+import ChatPage from './pages/common/ChatPage';
+
+// --- Customer Pages ---
+import MyPage from './pages/customer/MyPage';
+import EditMyInfoPage from './pages/customer/EditMyInfoPage';
+import ProposalsPage from './pages/customer/ProposalsPage';
+
+// --- Agent Pages ---
+import AgentDashboardPage from './pages/agent/AgentDashboardPage';
+import RequestDetailPage from './pages/agent/RequestDetailPage';
+import EditAgentInfoPage from './pages/agent/EditAgentInfoPage';
+import AgentPropertiesPage from './pages/agent/AgentPropertiesPage';
+import AddPropertyPage from './pages/agent/AddPropertyPage';
+// import SubmitProposalPage from './pages/agent/SubmitProposalPage'; // Note: This page might be deprecated
+
 
 type UserRole = 'customer' | 'agent' | null;
 
@@ -87,20 +97,22 @@ const App: React.FC = () => {
                 onLogout={handleLogout}
             />}
         >
+          {/* Common Routes */}
           <Route index element={<HomePage />} />
           <Route path="about" element={<AboutPage />} />
           <Route path="apply" element={<ApplyPage />} />
           <Route path="faq" element={<FAQPage />} />
           <Route path="forgot-password" element={<ForgotPasswordPage />} />
 
+          {/* Customer Routes */}
           <Route path="mypage" element={isLoggedIn && userRole === 'customer' ? <MyPage /> : <Navigate to="/" />} />
           <Route path="mypage/edit" element={isLoggedIn && userRole === 'customer' ? <EditMyInfoPage /> : <Navigate to="/" />} />
           <Route path="proposals/:requestId" element={isLoggedIn && userRole === 'customer' ? <ProposalsPage /> : <Navigate to="/" />} />
 
+          {/* Agent Routes */}
           <Route path="agent/dashboard" element={isLoggedIn && userRole === 'agent' ? <AgentDashboardPage /> : <Navigate to="/" />} />
           <Route path="agent/request/:requestId" element={isLoggedIn && userRole === 'agent' ? <RequestDetailPage /> : <Navigate to="/" />} />
           <Route path="agent/profile/edit" element={isLoggedIn && userRole === 'agent' ? <EditAgentInfoPage /> : <Navigate to="/" />} />
-          {/* SubmitProposalPage 라우트를 삭제합니다. */}
           {/* <Route path="agent/proposal/submit/:requestId" element={isLoggedIn && userRole === 'agent' ? <SubmitProposalPage /> : <Navigate to="/" />} /> */}
           <Route path="agent/properties" element={isLoggedIn && userRole === 'agent' ? <AgentPropertiesPage /> : <Navigate to="/" />} />
           <Route path="agent/properties/add" element={isLoggedIn && userRole === 'agent' ? <AddPropertyPage /> : <Navigate to="/" />} />
@@ -123,6 +135,7 @@ const App: React.FC = () => {
         onClose={handleSignUpModalClose}
         onLoginModalOpen={handleLoginModalOpen}
       />
+      {/* Note: SelectPropertyModal is not currently connected in App.tsx, it's opened from RequestDetailPage.tsx */}
     </>
   );
 }

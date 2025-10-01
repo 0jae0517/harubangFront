@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Building, Banknote, Text, Camera, Save, ArrowLeft, Square, Bath, Car, Home } from 'lucide-react';
+import { Building, Banknote, Text, Camera, Save, ArrowLeft, Square, Bath, Home } from 'lucide-react';
 
 const AddPropertyPage: React.FC = () => {
     const handleSubmit = (e: React.FormEvent) => {

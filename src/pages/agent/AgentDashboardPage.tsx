@@ -2,16 +2,11 @@ import React from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Building, Banknote, Eye, Edit } from 'lucide-react';
-
-// ... (mockRequests 데이터는 이전과 동일) ...
-const mockRequests = [
-  { id: 1, location: '서울특별시 강남구', propertyType: '아파트', transactionType: '전세', deposit: '5억', timestamp: '2시간 전' },
-  { id: 2, location: '경기도 수원시 영통구', propertyType: '오피스텔', transactionType: '월세', deposit: '2000만', rent: '80만', timestamp: '5시간 전' },
-  { id: 3, location: '인천광역시 연수구 송도동', propertyType: '아파트', transactionType: '매매', deposit: '12억', timestamp: '1일 전' },
-  { id: 4, location: '서울특별시 마포구 연남동', propertyType: '빌라', transactionType: '전세', deposit: '3억 5천', timestamp: '2일 전' },
-];
+import { useAppContext } from '../../store/AppContext';
 
 const AgentDashboardPage: React.FC = () => {
+    const { state } = useAppContext();
+    const requests = state.requests;
     const navigate = useNavigate();
 
     const handleViewDetails = (requestId: number) => {
@@ -36,7 +31,7 @@ const AgentDashboardPage: React.FC = () => {
 
         <div className="bg-white rounded-xl shadow-md overflow-hidden">
           <ul className="divide-y divide-gray-200">
-            {mockRequests.map((req, index) => (
+            {requests.map((req, index) => (
               <motion.li 
                 key={req.id}
                 initial={{ opacity: 0, y: 20 }}
@@ -53,7 +48,7 @@ const AgentDashboardPage: React.FC = () => {
                            }`}>
                                {req.transactionType}
                            </span>
-                           <p className="text-sm text-harubang-ink-light">{req.timestamp}</p>
+                           <p className="text-sm text-harubang-ink-light">{req.date}</p>
                         </div>
                         <p className="font-bold text-lg text-harubang-ink">{req.location}</p>
                         <div className="flex items-center gap-4 text-sm text-harubang-ink-light mt-2">
