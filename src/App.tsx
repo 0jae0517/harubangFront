@@ -6,7 +6,7 @@ import Header from './components/Header';
 import Footer from './components/Footer';
 import LoginModal from './components/LoginModal';
 import SignUpModal from './components/SignUpModal';
-import SelectPropertyModal from './components/SelectPropertyModal';
+//import SelectPropertyModal from './components/SelectPropertyModal';
 
 // --- Common Pages ---
 import HomePage from './pages/common/HomePage';
@@ -27,6 +27,8 @@ import RequestDetailPage from './pages/agent/RequestDetailPage';
 import EditAgentInfoPage from './pages/agent/EditAgentInfoPage';
 import AgentPropertiesPage from './pages/agent/AgentPropertiesPage';
 import AddPropertyPage from './pages/agent/AddPropertyPage';
+import LoginRequiredPage from "./pages/common/LoginRequiredPage.tsx";
+import VerifyEmailPage from "./pages/common/VerifyEmailPage";
 // import SubmitProposalPage from './pages/agent/SubmitProposalPage'; // Note: This page might be deprecated
 
 
@@ -103,8 +105,11 @@ const App: React.FC = () => {
           <Route path="apply" element={<ApplyPage />} />
           <Route path="faq" element={<FAQPage />} />
           <Route path="forgot-password" element={<ForgotPasswordPage />} />
+            <Route path="login-required" element={<LoginRequiredPage />} />
+            <Route path="verify" element={<VerifyEmailPage />} />
 
-          {/* Customer Routes */}
+
+            {/* Customer Routes */}
           <Route path="mypage" element={isLoggedIn && userRole === 'customer' ? <MyPage /> : <Navigate to="/" />} />
           <Route path="mypage/edit" element={isLoggedIn && userRole === 'customer' ? <EditMyInfoPage /> : <Navigate to="/" />} />
           <Route path="proposals/:requestId" element={isLoggedIn && userRole === 'customer' ? <ProposalsPage /> : <Navigate to="/" />} />
