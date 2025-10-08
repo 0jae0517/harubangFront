@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Send, ArrowLeft } from 'lucide-react';
 
 const ChatPage: React.FC = () => {
-    const { chatRoomId } = useParams();
+    //const { chatRoomId } = useParams();
     const [messages, setMessages] = useState([
         { id: 1, text: '안녕하세요! 제안드린 강남구 역삼동 아파트 매물 관련해서 문의드립니다.', sender: 'me' },
         { id: 2, text: '네, 고객님 안녕하세요! 어떤 점이 궁금하신가요?', sender: 'other' },

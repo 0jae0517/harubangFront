@@ -1,118 +1,232 @@
-import React, { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import harubangLogo from '../assets/logo.png';
+import { useEffect, useState } from "react";
+import { signup } from "../api/auth";
 
-interface SignUpModalProps {
+type SignUpModalProps = {
   isOpen: boolean;
   onClose: () => void;
-  onLoginModalOpen: () => void; // 회원가입 후 로그인 창을 열기 위한 함수
-}
-
-const SignUpModal: React.FC<SignUpModalProps> = ({ isOpen, onClose, onLoginModalOpen }) => {
-  const [userType, setUserType] = useState<'customer' | 'agent'>('customer');
-
-  const handleSignUp = (e: React.FormEvent) => {
-      e.preventDefault();
-      // 여기에 실제 회원가입 로직이 들어갑니다.
-      alert('회원가입이 완료되었습니다! 로그인해주세요.');
-      onClose(); // 현재 창을 닫고
-      onLoginModalOpen(); // 로그인 창을 엽니다.
-  };
-
-  const getTabClassName = (type: 'customer' | 'agent') => {
-    const baseClasses = "w-1/2 py-3 text-center text-lg font-bold focus:outline-none transition-colors duration-300";
-    if (userType === type) {
-      return `${baseClasses} text-harubang-blue border-b-2 border-harubang-blue`;
-    }
-    return `${baseClasses} text-gray-400 border-b-2 border-gray-200 hover:text-harubang-blue hover:border-harubang-blue/50`;
-  };
-
-  const inputStyle = "w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-harubang-blue";
-  const labelStyle = "block text-sm font-medium text-gray-700 mb-1";
-
-
-  return (
-    <AnimatePresence>
-      {isOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={onClose} className="fixed inset-0 bg-black/50" />
-          
-          <motion.div
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.95 }}
-            className="relative w-full max-w-lg bg-white rounded-2xl shadow-xl z-10 flex flex-col max-h-[80vh]" 
-          >
-            <button 
-              onClick={onClose} 
-              className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition-colors z-20"
-              aria-label="닫기"
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
-            </button>
-            
-            {/* Modal Header */}
-            <div className="p-8 pb-6 flex-shrink-0">
-                <div className="text-center mb-6">
-                    <img src={harubangLogo} alt="하루방 로고" className="h-12 w-auto mx-auto mb-4" />
-                    <h2 className="text-2xl font-bold text-harubang-ink">회원가입</h2>
-                </div>
-                <div className="flex">
-                  <button onClick={() => setUserType('customer')} className={getTabClassName('customer')}>일반 회원</button>
-                  <button onClick={() => setUserType('agent')} className={getTabClassName('agent')}>공인중개사 회원</button>
-                </div>
-            </div>
-
-            {/* Modal Content (Scrollable) */}
-            <div className="overflow-y-auto px-8">
-              <form className="space-y-4">
-                  {userType === 'customer' ? (
-                      <>
-                          <div><label className={labelStyle}>이름</label><input type="text" placeholder="이름을 입력하세요" required className={inputStyle} /></div>
-                          <div><label className={labelStyle}>이메일</label><input type="email" placeholder="이메일 주소를 입력하세요" required className={inputStyle} /></div>
-                          <div><label className={labelStyle}>비밀번호</label><input type="password" placeholder="8자리 이상, 영문/숫자/특수문자 조합" required className={inputStyle} /></div>
-                          <div><label className={labelStyle}>비밀번호 확인</label><input type="password" placeholder="비밀번호를 다시 한번 입력하세요" required className={inputStyle} /></div>
-                      </>
-                  ) : (
-                       <>
-                          <h3 className="font-semibold text-gray-800 border-b pb-2">중개사무소 정보</h3>
-                          <div><label className={labelStyle}>중개사무소 이름</label><input type="text" placeholder="예) 하루방 공인중개사사무소" required className={inputStyle} /></div>
-                          <div><label className={labelStyle}>사업자 등록번호</label><input type="text" placeholder="'-' 없이 숫자만 입력" required className={inputStyle} /></div>
-                          
-                          <h3 className="font-semibold text-gray-800 border-b pb-2 pt-4">대표자 정보</h3>
-                          <div><label className={labelStyle}>대표자명</label><input type="text" placeholder="대표자 성함을 입력하세요" required className={inputStyle} /></div>
-                          <div>
-                              <label className={labelStyle}>대표자 휴대폰 번호</label>
-                              <div className="flex gap-2">
-                                  <input type="tel" placeholder="'-' 없이 숫자만 입력" required className={inputStyle} />
-                                  <button type="button" className="bg-gray-200 text-gray-700 font-semibold px-4 rounded-lg text-sm flex-shrink-0 hover:bg-gray-300">인증요청</button>
-                              </div>
-                          </div>
-
-                           <h3 className="font-semibold text-gray-800 border-b pb-2 pt-4">계정 정보</h3>
-                          <div><label className={labelStyle}>이메일 (아이디)</label><input type="email" placeholder="사용하실 이메일 주소를 입력하세요" required className={inputStyle} /></div>
-                          <div><label className={labelStyle}>비밀번호</label><input type="password" placeholder="8자리 이상, 영문/숫자/특수문자 조합" required className={inputStyle} /></div>
-                          <div><label className={labelStyle}>비밀번호 확인</label><input type="password" placeholder="비밀번호를 다시 한번 입력하세요" required className={inputStyle} /></div>
-                      </>
-                  )}
-              </form>
-            </div>
-
-            {/* Modal Footer */}
-            <div className="p-8 pt-6 flex-shrink-0">
-              <form onSubmit={handleSignUp}>
-                <div className="pt-4">
-                    <label className="flex items-center gap-2 text-xs text-gray-500"><input type="checkbox" required className="rounded border-gray-300 text-harubang-blue focus:ring-harubang-blue" /> <span>(필수) 서비스 이용약관 및 개인정보처리방침에 동의합니다.</span></label>
-                </div>
-                <div><button type="submit" className="w-full bg-harubang-blue text-white font-bold py-3 rounded-lg hover:bg-harubang-blue-dark transition-colors mt-4">가입하기</button></div>
-              </form>
-            </div>
-            
-          </motion.div>
-        </div>
-      )}
-    </AnimatePresence>
-  );
+  onLoginModalOpen: () => void;
 };
 
-export default SignUpModal;
+export default function SignUpModal({
+                                      isOpen,
+                                      onClose,
+                                      onLoginModalOpen,
+                                    }: SignUpModalProps) {
+  // ✅ 상태 선언 (타입은 useState 제네릭으로만 지정)
+  const [email, setEmail] = useState("");
+  const [name, setName] = useState("");
+  const [password, setPassword] = useState("");
+  const [passwordConfirm, setPasswordConfirm] = useState("");
+  const [submitting, setSubmitting] = useState<boolean>(false);
+  const [sendingVerify, setSendingVerify] = useState<boolean>(false);
+  const [emailVerified, setEmailVerified] = useState<boolean>(false);
+  const [error, setError] = useState<string | null>(null);
+
+  // ✅ Hook은 return 위에 와야 함!
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const verified = params.get("verified");
+    const emailParam = params.get("email");
+    if (verified === "1" && emailParam) {
+      setEmail(emailParam);
+      setEmailVerified(true);
+    }
+  }, []);
+
+  const isValidEmail = (v: string) => /^\S+@\S+\.\S+$/.test(v);
+
+  // ✅ 인증메일 요청
+  const handleRequestVerify = async () => {
+    if (!isValidEmail(email)) {
+      setError("이메일 형식이 올바르지 않습니다.");
+      return;
+    }
+    try {
+      setSendingVerify(true);
+      const res = await fetch("/api/auth/verification/request", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email }),
+      });
+      if (res.ok) {
+        alert("인증메일을 보냈습니다. 메일함(스팸함 포함)을 확인해 주세요!");
+      } else {
+        const text = await res.text();
+        alert(`인증메일 요청 실패: ${text || "잠시 후 다시 시도해주세요."}`);
+      }
+    } catch {
+      alert("네트워크 오류로 인증메일 요청에 실패했습니다.");
+    } finally {
+      setSendingVerify(false);
+    }
+  };
+
+  const validate = () => {
+    if (!email || !name || !password || !passwordConfirm) {
+      setError("모든 항목을 입력해주세요.");
+      return false;
+    }
+    if (!isValidEmail(email)) {
+      setError("이메일 형식이 올바르지 않습니다.");
+      return false;
+    }
+    if (password.length < 6) {
+      setError("비밀번호는 6자 이상이어야 합니다.");
+      return false;
+    }
+    if (password !== passwordConfirm) {
+      setError("비밀번호가 일치하지 않습니다.");
+      return false;
+    }
+    setError(null);
+    return true;
+  };
+
+  // ✅ 회원가입 처리
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!validate()) return;
+
+    try {
+      setSubmitting(true);
+      await signup({ email, name, password });
+      alert("가입이 완료되었습니다. 로그인해 주세요!");
+      onClose();
+      onLoginModalOpen();
+    } catch {
+      setError("회원가입에 실패했습니다. 잠시 후 다시 시도해주세요.");
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const clearAndClose = () => {
+    setEmail("");
+    setName("");
+    setPassword("");
+    setPasswordConfirm("");
+    setError(null);
+    setEmailVerified(false);
+    onClose();
+  };
+
+  // ✅ 이제 return
+  if (!isOpen) return null;
+
+  return (
+      <div className="fixed inset-0 z-50 flex items-center justify-center">
+        <div className="absolute inset-0 bg-black/40" onClick={clearAndClose} />
+
+        <div className="relative z-10 w-full max-w-md rounded-2xl bg-white p-6 shadow-xl">
+          <div className="mb-4 flex items-center justify-between">
+            <h2 className="text-xl font-bold">회원가입</h2>
+            <button
+                onClick={clearAndClose}
+                className="rounded px-2 py-1 text-gray-500 hover:bg-gray-100"
+                aria-label="Close"
+            >
+              ✕
+            </button>
+          </div>
+
+          <form onSubmit={handleSubmit} className="space-y-3">
+            {/* 이메일 */}
+            <div>
+              <label className="mb-1 block text-sm">이메일</label>
+              <div className="flex gap-2">
+                <input
+                    type="email"
+                    className="flex-1 rounded border px-3 py-2 outline-none focus:ring"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="you@example.com"
+                    disabled={emailVerified}
+                />
+                <button
+                    type="button"
+                    onClick={handleRequestVerify}
+                    disabled={!email || sendingVerify || emailVerified}
+                    className={`whitespace-nowrap rounded px-3 py-2 text-sm ${
+                        emailVerified
+                            ? "bg-green-500 text-white"
+                            : "bg-gray-100 hover:bg-gray-200 text-black"
+                    } disabled:opacity-60`}
+                >
+                  {emailVerified
+                      ? "인증완료"
+                      : sendingVerify
+                          ? "보내는 중..."
+                          : "인증메일 보내기"}
+                </button>
+              </div>
+            </div>
+
+            {/* 이름 */}
+            <div>
+              <label className="mb-1 block text-sm">이름</label>
+              <input
+                  className="w-full rounded border px-3 py-2 outline-none focus:ring"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  placeholder="홍길동"
+                  disabled={!emailVerified}
+              />
+            </div>
+
+            {/* 비밀번호 */}
+            <div>
+              <label className="mb-1 block text-sm">비밀번호</label>
+              <input
+                  type="password"
+                  className="w-full rounded border px-3 py-2 outline-none focus:ring"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="6자 이상"
+                  disabled={!emailVerified}
+              />
+            </div>
+
+            {/* 비밀번호 확인 */}
+            <div>
+              <label className="mb-1 block text-sm">비밀번호 확인</label>
+              <input
+                  type="password"
+                  className="w-full rounded border px-3 py-2 outline-none focus:ring"
+                  value={passwordConfirm}
+                  onChange={(e) => setPasswordConfirm(e.target.value)}
+                  placeholder="비밀번호 재입력"
+                  disabled={!emailVerified}
+              />
+            </div>
+
+            {error && <p className="text-sm text-red-600">{error}</p>}
+
+            <button
+                type="submit"
+                disabled={!emailVerified || submitting}
+                className={`mt-2 w-full rounded-xl px-4 py-2 font-semibold text-white ${
+                    emailVerified
+                        ? "bg-blue-600 hover:bg-blue-700"
+                        : "bg-gray-300 cursor-not-allowed"
+                } disabled:opacity-60`}
+            >
+              {submitting ? "가입 중..." : "가입하기"}
+            </button>
+          </form>
+
+          <div className="mt-4 text-center text-sm text-gray-600">
+            이미 계정이 있으신가요?{" "}
+            <button
+                onClick={() => {
+                  onClose();
+                  onLoginModalOpen();
+                }}
+                className="font-semibold text-blue-600 underline"
+            >
+              로그인
+            </button>
+          </div>
+        </div>
+      </div>
+  );
+}
