@@ -6,8 +6,7 @@ import Header from './components/Header';
 import Footer from './components/Footer';
 import LoginModal from './components/LoginModal';
 import SignUpModal from './components/SignUpModal';
-//import SelectPropertyModal from './components/SelectPropertyModal';
-import ProtectedRoute from './components/ProtectedRoute'; // ProtectedRoute import
+import ProtectedRoute from './components/ProtectedRoute';
 
 // --- Common Pages ---
 import HomePage from './pages/common/HomePage';
