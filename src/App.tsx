@@ -7,6 +7,7 @@ import Footer from './components/Footer';
 import LoginModal from './components/LoginModal';
 import SignUpModal from './components/SignUpModal';
 import SelectPropertyModal from './components/SelectPropertyModal';
+import ProtectedRoute from './components/ProtectedRoute'; // ProtectedRoute import
 
 // --- Common Pages ---
 import HomePage from './pages/common/HomePage';
@@ -27,8 +28,6 @@ import RequestDetailPage from './pages/agent/RequestDetailPage';
 import EditAgentInfoPage from './pages/agent/EditAgentInfoPage';
 import AgentPropertiesPage from './pages/agent/AgentPropertiesPage';
 import AddPropertyPage from './pages/agent/AddPropertyPage';
-// import SubmitProposalPage from './pages/agent/SubmitProposalPage'; // Note: This page might be deprecated
-
 
 type UserRole = 'customer' | 'agent' | null;
 
@@ -100,7 +99,17 @@ const App: React.FC = () => {
           {/* Common Routes */}
           <Route index element={<HomePage />} />
           <Route path="about" element={<AboutPage />} />
-          <Route path="apply" element={<ApplyPage />} />
+          
+          {/* ApplyPage를 ProtectedRoute로 감싸줍니다. */}
+          <Route 
+            path="apply" 
+            element={
+              <ProtectedRoute isLoggedIn={isLoggedIn} onLoginModalOpen={handleLoginModalOpen}>
+                <ApplyPage />
+              </ProtectedRoute>
+            } 
+          />
+          
           <Route path="faq" element={<FAQPage />} />
           <Route path="forgot-password" element={<ForgotPasswordPage />} />
 
@@ -113,10 +122,8 @@ const App: React.FC = () => {
           <Route path="agent/dashboard" element={isLoggedIn && userRole === 'agent' ? <AgentDashboardPage /> : <Navigate to="/" />} />
           <Route path="agent/request/:requestId" element={isLoggedIn && userRole === 'agent' ? <RequestDetailPage /> : <Navigate to="/" />} />
           <Route path="agent/profile/edit" element={isLoggedIn && userRole === 'agent' ? <EditAgentInfoPage /> : <Navigate to="/" />} />
-          {/* <Route path="agent/proposal/submit/:requestId" element={isLoggedIn && userRole === 'agent' ? <SubmitProposalPage /> : <Navigate to="/" />} /> */}
           <Route path="agent/properties" element={isLoggedIn && userRole === 'agent' ? <AgentPropertiesPage /> : <Navigate to="/" />} />
           <Route path="agent/properties/add" element={isLoggedIn && userRole === 'agent' ? <AddPropertyPage /> : <Navigate to="/" />} />
-
         </Route>
         
         <Route path="/chat/:chatRoomId" element={<ChatLayout />}>
@@ -135,7 +142,7 @@ const App: React.FC = () => {
         onClose={handleSignUpModalClose}
         onLoginModalOpen={handleLoginModalOpen}
       />
-      {/* Note: SelectPropertyModal is not currently connected in App.tsx, it's opened from RequestDetailPage.tsx */}
+      {/* Note: SelectPropertyModal is not currently connected in App.tsx */}
     </>
   );
 }

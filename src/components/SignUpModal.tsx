@@ -1,22 +1,57 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import harubangLogo from '../assets/logo.png';
 
 interface SignUpModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onLoginModalOpen: () => void; // 회원가입 후 로그인 창을 열기 위한 함수
+  onLoginModalOpen: () => void;
 }
 
 const SignUpModal: React.FC<SignUpModalProps> = ({ isOpen, onClose, onLoginModalOpen }) => {
   const [userType, setUserType] = useState<'customer' | 'agent'>('customer');
+  const [password, setPassword] = useState('');
+  const [passwordConfirm, setPasswordConfirm] = useState('');
+  const [passwordError, setPasswordError] = useState('');
+
+  // userType이 바뀔 때 비밀번호 관련 상태를 초기화합니다.
+  useEffect(() => {
+    setPassword('');
+    setPasswordConfirm('');
+    setPasswordError('');
+  }, [userType]);
+
+  const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newPassword = e.target.value;
+    setPassword(newPassword);
+    if (passwordConfirm && newPassword !== passwordConfirm) {
+      setPasswordError('비밀번호가 일치하지 않습니다.');
+    } else {
+      setPasswordError('');
+    }
+  };
+
+  const handlePasswordConfirmChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newPasswordConfirm = e.target.value;
+    setPasswordConfirm(newPasswordConfirm);
+    if (password !== newPasswordConfirm) {
+      setPasswordError('비밀번호가 일치하지 않습니다.');
+    } else {
+      setPasswordError('');
+    }
+  };
 
   const handleSignUp = (e: React.FormEvent) => {
       e.preventDefault();
-      // 여기에 실제 회원가입 로직이 들어갑니다.
+      if (password !== passwordConfirm) {
+          setPasswordError('비밀번호가 일치하지 않습니다.');
+          alert('비밀번호가 일치하지 않습니다. 다시 확인해주세요.');
+          return;
+      }
+      setPasswordError('');
       alert('회원가입이 완료되었습니다! 로그인해주세요.');
-      onClose(); // 현재 창을 닫고
-      onLoginModalOpen(); // 로그인 창을 엽니다.
+      onClose();
+      onLoginModalOpen();
   };
 
   const getTabClassName = (type: 'customer' | 'agent') => {
@@ -29,7 +64,6 @@ const SignUpModal: React.FC<SignUpModalProps> = ({ isOpen, onClose, onLoginModal
 
   const inputStyle = "w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-harubang-blue";
   const labelStyle = "block text-sm font-medium text-gray-700 mb-1";
-
 
   return (
     <AnimatePresence>
@@ -51,10 +85,9 @@ const SignUpModal: React.FC<SignUpModalProps> = ({ isOpen, onClose, onLoginModal
               <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
             </button>
             
-            {/* Modal Header */}
             <div className="p-8 pb-6 flex-shrink-0">
                 <div className="text-center mb-6">
-                    <img src={harubangLogo} alt="하루방 로고" className="h-12 w-auto mx-auto mb-4" />
+                    <img src={harubangLogo} alt="하루방 로고" className="h-12 w-auto mx-auto mb-2" />
                     <h2 className="text-2xl font-bold text-harubang-ink">회원가입</h2>
                 </div>
                 <div className="flex">
@@ -63,21 +96,27 @@ const SignUpModal: React.FC<SignUpModalProps> = ({ isOpen, onClose, onLoginModal
                 </div>
             </div>
 
-            {/* Modal Content (Scrollable) */}
-            <div className="overflow-y-auto px-8">
-              <form className="space-y-4">
+            <form onSubmit={handleSignUp} className="flex-grow flex flex-col overflow-hidden">
+              <div className="overflow-y-auto px-8 pb-6"> {/* 스크롤 영역에 하단 여백(pb-6) 추가 */}
                   {userType === 'customer' ? (
-                      <>
+                      <div className="space-y-4">
                           <div><label className={labelStyle}>이름</label><input type="text" placeholder="이름을 입력하세요" required className={inputStyle} /></div>
                           <div><label className={labelStyle}>이메일</label><input type="email" placeholder="이메일 주소를 입력하세요" required className={inputStyle} /></div>
-                          <div><label className={labelStyle}>비밀번호</label><input type="password" placeholder="8자리 이상, 영문/숫자/특수문자 조합" required className={inputStyle} /></div>
-                          <div><label className={labelStyle}>비밀번호 확인</label><input type="password" placeholder="비밀번호를 다시 한번 입력하세요" required className={inputStyle} /></div>
-                      </>
+                          <div>
+                              <label className={labelStyle}>비밀번호</label>
+                              <input type="password" placeholder="8자리 이상, 영문/숫자/특수문자 조합" required className={inputStyle} value={password} onChange={handlePasswordChange} />
+                          </div>
+                          <div>
+                              <label className={labelStyle}>비밀번호 확인</label>
+                              <input type="password" placeholder="비밀번호를 다시 한번 입력하세요" required className={inputStyle} value={passwordConfirm} onChange={handlePasswordConfirmChange} />
+                              {passwordError && <p className="text-red-500 text-xs mt-1">{passwordError}</p>}
+                          </div>
+                      </div>
                   ) : (
-                       <>
+                       <div className="space-y-4">
                           <h3 className="font-semibold text-gray-800 border-b pb-2">중개사무소 정보</h3>
                           <div><label className={labelStyle}>중개사무소 이름</label><input type="text" placeholder="예) 하루방 공인중개사사무소" required className={inputStyle} /></div>
-                          <div><label className={labelStyle}>사업자 등록번호</label><input type="text" placeholder="'-' 없이 숫자만 입력" required className={inputStyle} /></div>
+                          <div><label className={labelStyle}>중개등록번호</label><input type="text" placeholder="'-' 없이 숫자만 입력" required className={inputStyle} /></div>
                           
                           <h3 className="font-semibold text-gray-800 border-b pb-2 pt-4">대표자 정보</h3>
                           <div><label className={labelStyle}>대표자명</label><input type="text" placeholder="대표자 성함을 입력하세요" required className={inputStyle} /></div>
@@ -91,22 +130,26 @@ const SignUpModal: React.FC<SignUpModalProps> = ({ isOpen, onClose, onLoginModal
 
                            <h3 className="font-semibold text-gray-800 border-b pb-2 pt-4">계정 정보</h3>
                           <div><label className={labelStyle}>이메일 (아이디)</label><input type="email" placeholder="사용하실 이메일 주소를 입력하세요" required className={inputStyle} /></div>
-                          <div><label className={labelStyle}>비밀번호</label><input type="password" placeholder="8자리 이상, 영문/숫자/특수문자 조합" required className={inputStyle} /></div>
-                          <div><label className={labelStyle}>비밀번호 확인</label><input type="password" placeholder="비밀번호를 다시 한번 입력하세요" required className={inputStyle} /></div>
-                      </>
+                          <div>
+                              <label className={labelStyle}>비밀번호</label>
+                              <input type="password" placeholder="8자리 이상, 영문/숫자/특수문자 조합" required className={inputStyle} value={password} onChange={handlePasswordChange} />
+                          </div>
+                          <div>
+                              <label className={labelStyle}>비밀번호 확인</label>
+                              <input type="password" placeholder="비밀번호를 다시 한번 입력하세요" required className={inputStyle} value={passwordConfirm} onChange={handlePasswordConfirmChange} />
+                              {passwordError && <p className="text-red-500 text-xs mt-1">{passwordError}</p>}
+                          </div>
+                       </div>
                   )}
-              </form>
-            </div>
+              </div>
 
-            {/* Modal Footer */}
-            <div className="p-8 pt-6 flex-shrink-0">
-              <form onSubmit={handleSignUp}>
-                <div className="pt-4">
+              <div className="p-8 pt-6 mt-auto border-t">
+                <div>
                     <label className="flex items-center gap-2 text-xs text-gray-500"><input type="checkbox" required className="rounded border-gray-300 text-harubang-blue focus:ring-harubang-blue" /> <span>(필수) 서비스 이용약관 및 개인정보처리방침에 동의합니다.</span></label>
                 </div>
                 <div><button type="submit" className="w-full bg-harubang-blue text-white font-bold py-3 rounded-lg hover:bg-harubang-blue-dark transition-colors mt-4">가입하기</button></div>
-              </form>
-            </div>
+              </div>
+            </form>
             
           </motion.div>
         </div>
