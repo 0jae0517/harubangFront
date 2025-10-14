@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Routes, Route, Outlet, Navigate } from 'react-router-dom';
+import { Routes, Route, Outlet, Navigate, useLocation } from 'react-router-dom';
 
 // --- Components ---
 import Header from './components/Header';
@@ -8,28 +8,30 @@ import LoginModal from './components/LoginModal';
 import SignUpModal from './components/SignUpModal';
 import ProtectedRoute from './components/ProtectedRoute';
 
-// --- Common Pages ---
+// --- Pages ---
+// ... (다른 페이지 import는 그대로 유지)
 import HomePage from './pages/common/HomePage';
 import AboutPage from './pages/common/AboutPage';
 import ApplyPage from './pages/common/ApplyPage';
 import FAQPage from './pages/common/FAQPage';
 import ForgotPasswordPage from './pages/common/ForgotPasswordPage';
 import ChatPage from './pages/common/ChatPage';
-
-// --- Customer Pages ---
 import MyPage from './pages/customer/MyPage';
 import EditMyInfoPage from './pages/customer/EditMyInfoPage';
 import ProposalsPage from './pages/customer/ProposalsPage';
-
-// --- Agent Pages ---
 import AgentDashboardPage from './pages/agent/AgentDashboardPage';
 import RequestDetailPage from './pages/agent/RequestDetailPage';
 import EditAgentInfoPage from './pages/agent/EditAgentInfoPage';
 import AgentPropertiesPage from './pages/agent/AgentPropertiesPage';
 import AddPropertyPage from './pages/agent/AddPropertyPage';
+import AdminLayout from './pages/admin/AdminLayout';
+import AdminDashboardPage from './pages/admin/AdminDashboardPage';
+import AdminUserManagementPage from './pages/admin/AdminUserManagementPage';
 
-type UserRole = 'customer' | 'agent' | null;
+// *** 수정된 부분: 'admin'을 타입에 추가 ***
+type UserRole = 'customer' | 'agent' | 'admin' | null;
 
+// GeneralLayout, ChatLayout, AdminProtectedRoute 컴포넌트는 기존과 동일
 const GeneralLayout: React.FC<{ 
     isLoggedIn: boolean;
     userRole: UserRole;
@@ -52,12 +54,14 @@ const GeneralLayout: React.FC<{
   );
 };
 
-const ChatLayout: React.FC = () => {
-    return (
-        <div className="h-screen">
-            <Outlet />
-        </div>
-    );
+const ChatLayout: React.FC = () => ( <div className="h-screen"><Outlet /></div> );
+
+const AdminProtectedRoute: React.FC<{ isLoggedIn: boolean; userRole: UserRole }> = ({ isLoggedIn, userRole }) => {
+    const location = useLocation();
+    if (!isLoggedIn || userRole !== 'admin') {
+        return <Navigate to="/" state={{ from: location }} replace />;
+    }
+    return <Outlet />;
 };
 
 const App: React.FC = () => {
@@ -66,6 +70,7 @@ const App: React.FC = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [userRole, setUserRole] = useState<UserRole>(null);
 
+  // *** 수정된 부분: handleLoginSuccess의 role 타입에 'admin' 추가 ***
   const handleLoginSuccess = (role: UserRole) => {
     setIsLoggedIn(true);
     setUserRole(role);
@@ -86,8 +91,20 @@ const App: React.FC = () => {
   return (
     <>
       <Routes>
+        {/* 관리자 라우트 */}
+        <Route element={<AdminProtectedRoute isLoggedIn={isLoggedIn} userRole={userRole} />}>
+            <Route path="/admin/*" element={<AdminLayout onLogout={handleLogout} />}>
+                <Route path="dashboard" element={<AdminDashboardPage />} />
+                <Route path="users" element={<AdminUserManagementPage />} />
+                <Route path="requests" element={<div>신청서 관리 페이지</div>} />
+                <Route path="properties" element={<div>매물 관리 페이지</div>} />
+                <Route index element={<Navigate to="dashboard" replace />} />
+            </Route>
+        </Route>
+
+        {/* 일반 사용자 라우트 */}
         <Route 
-            path="/" 
+            path="/*" 
             element={<GeneralLayout 
                 isLoggedIn={isLoggedIn} 
                 userRole={userRole} 
@@ -95,11 +112,8 @@ const App: React.FC = () => {
                 onLogout={handleLogout}
             />}
         >
-          {/* Common Routes */}
           <Route index element={<HomePage />} />
           <Route path="about" element={<AboutPage />} />
-          
-          {/* ApplyPage를 ProtectedRoute로 감싸줍니다. */}
           <Route 
             path="apply" 
             element={
@@ -108,16 +122,11 @@ const App: React.FC = () => {
               </ProtectedRoute>
             } 
           />
-          
           <Route path="faq" element={<FAQPage />} />
           <Route path="forgot-password" element={<ForgotPasswordPage />} />
-
-          {/* Customer Routes */}
           <Route path="mypage" element={isLoggedIn && userRole === 'customer' ? <MyPage /> : <Navigate to="/" />} />
           <Route path="mypage/edit" element={isLoggedIn && userRole === 'customer' ? <EditMyInfoPage /> : <Navigate to="/" />} />
           <Route path="proposals/:requestId" element={isLoggedIn && userRole === 'customer' ? <ProposalsPage /> : <Navigate to="/" />} />
-
-          {/* Agent Routes */}
           <Route path="agent/dashboard" element={isLoggedIn && userRole === 'agent' ? <AgentDashboardPage /> : <Navigate to="/" />} />
           <Route path="agent/request/:requestId" element={isLoggedIn && userRole === 'agent' ? <RequestDetailPage /> : <Navigate to="/" />} />
           <Route path="agent/profile/edit" element={isLoggedIn && userRole === 'agent' ? <EditAgentInfoPage /> : <Navigate to="/" />} />
@@ -141,7 +150,6 @@ const App: React.FC = () => {
         onClose={handleSignUpModalClose}
         onLoginModalOpen={handleLoginModalOpen}
       />
-      {/* Note: SelectPropertyModal is not currently connected in App.tsx */}
     </>
   );
 }
