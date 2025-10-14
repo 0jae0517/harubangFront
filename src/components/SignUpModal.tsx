@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Search } from 'lucide-react';
+
 import { agentDatabase } from '../data_temp/AgentMockData'; // 가상 데이터베이스 import
 import type { AgentInfo } from '../data_temp/AgentMockData'; // 타입 import
 import Spinner from './common/Spinner'; 
@@ -115,6 +116,14 @@ const SignUpModal: React.FC<SignUpModalProps> = ({ isOpen, onClose, onLoginModal
       }, 1000);
   };
 
+  // Enter 키로 검색을 실행하는 함수
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      e.preventDefault(); // form 태그의 기본 Enter 동작(제출)을 막습니다.
+      handleSearchAgent();
+    }
+  };
+
   // 중개사 선택 함수
   const handleSelectAgent = (agent: AgentInfo) => {
       setSelectedAgent(agent);
@@ -210,7 +219,7 @@ const SignUpModal: React.FC<SignUpModalProps> = ({ isOpen, onClose, onLoginModal
               className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition-colors z-20"
               aria-label="닫기"
             >
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
             </button>
             
             <div className="p-8 pb-6 flex-shrink-0">
@@ -267,7 +276,15 @@ const SignUpModal: React.FC<SignUpModalProps> = ({ isOpen, onClose, onLoginModal
                             <div>
                                 <label className={labelStyle}>중개등록번호 또는 상호명</label>
                                 <div className="flex gap-2">
-                                    <input type="search" placeholder="검색어를 입력하세요" className={inputStyle} value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} disabled={!!selectedAgent}/>
+                                    <input 
+                                      type="search" 
+                                      placeholder="중개등록번호 입력 시 '-' 포함 " 
+                                      className={inputStyle} 
+                                      value={searchQuery} 
+                                      onChange={(e) => setSearchQuery(e.target.value)} 
+                                      onKeyDown={handleKeyDown}
+                                      disabled={!!selectedAgent}
+                                    />
                                     <button type="button" onClick={handleSearchAgent} className="bg-harubang-blue text-white p-3 rounded-lg flex-shrink-0 hover:bg-harubang-blue-dark" disabled={!!selectedAgent}>
                                         <Search size={20} />
                                     </button>
@@ -357,3 +374,4 @@ const SignUpModal: React.FC<SignUpModalProps> = ({ isOpen, onClose, onLoginModal
 };
 
 export default SignUpModal;
+
