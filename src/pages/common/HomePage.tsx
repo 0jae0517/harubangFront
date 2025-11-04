@@ -1,36 +1,38 @@
 import React from 'react';
+import HomeBackground from '../../assets/home_bg.jpg';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { ClipboardList, MessageSquare, Users, UserCheck, BadgePercent, MessageCircle } from 'lucide-react';
 
 const HomePage: React.FC = () => {
-  return (
-    <div className="bg-white font-sans text-harubang-ink">
-      {/* Hero Section */}
-      <section className="relative h-[60vh] md:h-[70vh] flex items-center text-white">
-        {/* Background Image */}
-        <div 
-          className="absolute inset-0 bg-cover bg-center"
-          style={{ backgroundImage: "url('https://images.unsplash.com/photo-1616046229478-9901c5536a45?q=80&w=2070&auto=format&fit=crop')" }}
-        ></div>
-        {/* Overlay */}
-        <div className="absolute inset-0 bg-black/50"></div>
+  return (
+    <div className="bg-white font-sans text-harubang-ink">
+      {/* Hero Section */}
+      <section className="relative h-[60vh] md:h-[50vh] flex items-center text-white">
+        {/* Background Image */}
+        <div 
+          className="absolute inset-0 bg-cover bg-center"
+          // 2. import한 변수를 사용하여 style 속성을 수정합니다.
+          style={{ backgroundImage: `url(${HomeBackground})` }}
+        ></div>
+        {/* Overlay */}
+        <div className="absolute inset-0 bg-black/50"></div>
 
         <div className="relative z-10 container mx-auto px-6 text-left">
             <motion.h1 
-              className="text-4xl md:text-5xl font-bold mb-4 flex flex-col gap-y-4" // flex, flex-col, gap-y-* 로 간격 조절
+              className="text-4xl md:text-5xl font-bold mb-6 flex flex-col gap-y-4" // flex, flex-col, gap-y-* 로 간격 조절
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8 }}
           >
-              <span>어쩌구 저쩌구,</span>
-              <span>어쩌구 저쩌구.</span>
+              <span>끝없는 '손품'과 '발품',</span>
+              <span>이제 신청서 한 장으로 끝내세요.</span>
 </motion.h1>
             <motion.p 
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.8, delay: 0.2 }}
-                className="text-lg md:text-xl text-gray-200 mb-10 max-w-xl"
+                className="text-lg md:text-xl text-gray-200 mb-6 max-w-xl"
             >
                 필터 대신 신청서로, 원하는 조건의 집을 한 번에 받아보세요.
             </motion.p>

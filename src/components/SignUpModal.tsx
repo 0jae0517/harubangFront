@@ -1,20 +1,26 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Search } from 'lucide-react';
+import axios from 'axios'; // [수정] axios import
 
 import { agentDatabase } from '../data_temp/AgentMockData'; // 가상 데이터베이스 import
 import type { AgentInfo } from '../data_temp/AgentMockData'; // 타입 import
 import Spinner from './common/Spinner'; 
 
+// [추가] 백엔드 API 기본 URL
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080';
+
+// [복구] SignUpModalProps 인터페이스 정의
 interface SignUpModalProps {
   isOpen: boolean;
   onClose: () => void;
   onLoginModalOpen: () => void;
 }
 
-// 비밀번호 유효성 검사 함수 (8자 이상, 영문, 숫자, 특수문자 포함)
+// [복구] 비밀번호 유효성 검사 함수 (8자 이상, 영문, 숫자, 특수문자 포함)
 const validatePassword = (password: string): boolean => {
-    const passwordRegex = /^(?=.*[a-zA-Z])(?=.*[!@#$%^*+=-])(?=.*[0-9]).{8,25}$/;
+    // [수정] _(언더스코어)를 특수문자에 포함
+    const passwordRegex = /^(?=.*[a-zA-Z])(?=.*[!@#$%^*+=-_])(?=.*[0-9]).{8,25}$/;
     return passwordRegex.test(password);
 }
 
@@ -22,9 +28,14 @@ const validatePassword = (password: string): boolean => {
 const SignUpModal: React.FC<SignUpModalProps> = ({ isOpen, onClose, onLoginModalOpen }) => {
   const [userType, setUserType] = useState<'customer' | 'agent'>('customer');
   
-  // 비밀번호 상태
+  // [수정] 회원가입 폼 상태 추가
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [passwordConfirm, setPasswordConfirm] = useState('');
+  
+  // [수정] 에러 메시지 상태 추가
+  const [formError, setFormError] = useState('');
   
   // 오류 메시지 상태
   const [passwordError, setPasswordError] = useState('');
@@ -46,8 +57,12 @@ const SignUpModal: React.FC<SignUpModalProps> = ({ isOpen, onClose, onLoginModal
 
   // userType이 바뀔 때 모든 상태 초기화
   useEffect(() => {
+    // [수정] 새 폼 상태도 초기화
+    setName('');
+    setEmail('');
     setPassword('');
     setPasswordConfirm('');
+    setFormError('');
     setPasswordError('');
     setPasswordConfirmError('');
     setPhone('');
@@ -73,7 +88,7 @@ const SignUpModal: React.FC<SignUpModalProps> = ({ isOpen, onClose, onLoginModal
 
   const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newPassword = e.target.value;
-    setPassword(newPassword);
+    setPassword(newPassword); // [수정] password 상태 업데이트
     if (!validatePassword(newPassword)) {
         setPasswordError('8자 이상, 영문/숫자/특수문자를 포함해야 합니다.');
     } else {
@@ -88,7 +103,7 @@ const SignUpModal: React.FC<SignUpModalProps> = ({ isOpen, onClose, onLoginModal
 
   const handlePasswordConfirmChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newPasswordConfirm = e.target.value;
-    setPasswordConfirm(newPasswordConfirm);
+    setPasswordConfirm(newPasswordConfirm); // [수정] passwordConfirm 상태 업데이트
     if (password !== newPasswordConfirm) {
       setPasswordConfirmError('비밀번호가 일치하지 않습니다.');
     } else {
@@ -129,6 +144,8 @@ const SignUpModal: React.FC<SignUpModalProps> = ({ isOpen, onClose, onLoginModal
       setSelectedAgent(agent);
       setSearchResults([]);
       setSearchQuery('');
+      // [수정] 중개사 선택 시 '대표자명'을 'name' 상태에 자동 입력
+      setName(agent.representative); 
   }
 
   const handleRequestAuthCode = () => {
@@ -153,36 +170,72 @@ const SignUpModal: React.FC<SignUpModalProps> = ({ isOpen, onClose, onLoginModal
       }
   }
 
-  // 최종 가입 로직
-  const handleSignUp = (e: React.FormEvent) => {
+  // [수정] 최종 가입 로직 (백엔드 연동)
+  const handleSignUp = async (e: React.FormEvent) => { // async 추가
       e.preventDefault();
+      setFormError(''); // 에러 초기화
       
       const isPasswordValid = validatePassword(password);
       const isPasswordConfirmed = password === passwordConfirm;
       
       if (!isPasswordValid || !isPasswordConfirmed) {
-          alert('비밀번호를 확인해주세요.');
+          setFormError('비밀번호를 확인해주세요.');
           return;
       }
 
       if (userType === 'customer' && !isVerified) {
-          alert('휴대폰 인증을 완료해주세요.');
+          setFormError('휴대폰 인증을 완료해주세요.');
           return;
       }
 
       if (userType === 'agent' && !selectedAgent) {
-          alert('소속된 중개사무소를 선택해주세요.');
+          setFormError('소속된 중개사무소를 선택해주세요.');
           return;
       }
 
        if (userType === 'agent' && !isVerified) {
-          alert('대표자 본인인증을 완료해주세요.');
+          setFormError('대표자 본인인증을 완료해주세요.');
           return;
       }
 
-      alert('회원가입이 완료되었습니다! 로그인해주세요.');
-      onClose();
-      onLoginModalOpen();
+      // [수정] alert 대신 백엔드 API 호출
+      try {
+          if (userType === 'customer') {
+              // 고객 회원가입 API 호출
+              await axios.post(`${API_BASE_URL}/api/auth/signup/customer`, {
+                  email: email,
+                  password: password,
+                  name: name,
+                  phone: phone
+              });
+          } else if (userType === 'agent' && selectedAgent) {
+              // 중개사 회원가입 API 호출
+              await axios.post(`${API_BASE_URL}/api/auth/signup/agent`, {
+                  email: email,
+                  password: password,
+                  name: name, // 대표자명
+                  phone: phone,
+                  registrationNumber: selectedAgent.registrationNumber,
+                  officeName: selectedAgent.name,
+                  officeAddress: selectedAgent.address
+              });
+          }
+
+          // [수정] 성공 시
+          alert('회원가입이 완료되었습니다! 로그인해주세요.');
+          onClose();
+          onLoginModalOpen();
+
+      } catch (err: any) {
+          // [수정] 실패 시
+          if (axios.isAxiosError(err) && err.response) {
+              // 백엔드에서 보낸 에러 메시지(예: "이미 사용 중인 이메일입니다.") 표시
+              setFormError(err.response.data || '회원가입에 실패했습니다.');
+          } else {
+              setFormError('회원가입 중 오류가 발생했습니다.');
+          }
+          console.error("Sign up error:", err);
+      }
   };
 
   const getTabClassName = (type: 'customer' | 'agent') => {
@@ -194,11 +247,11 @@ const SignUpModal: React.FC<SignUpModalProps> = ({ isOpen, onClose, onLoginModal
   };
 
   // 가입 버튼 활성화 조건
-  const isCustomerFormValid = isVerified && validatePassword(password) && password === passwordConfirm && !passwordError && !passwordConfirmError;
-  const isAgentFormValid = !!selectedAgent && isVerified && validatePassword(password) && password === passwordConfirm && !passwordError && !passwordConfirmError;
+  const isCustomerFormValid = isVerified && validatePassword(password) && password === passwordConfirm && !passwordError && !passwordConfirmError && email && name;
+  const isAgentFormValid = !!selectedAgent && isVerified && validatePassword(password) && password === passwordConfirm && !passwordError && !passwordConfirmError && email && name;
   const isSubmitDisabled = userType === 'customer' ? !isCustomerFormValid : !isAgentFormValid;
 
-
+  // [복구] 스타일 정의
   const inputStyle = "w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-harubang-blue";
   const labelStyle = "block text-sm font-medium text-gray-700 mb-1";
 
@@ -237,7 +290,11 @@ const SignUpModal: React.FC<SignUpModalProps> = ({ isOpen, onClose, onLoginModal
                   {userType === 'customer' ? (
                       <div className="space-y-4">
                           {/* --- 일반 회원 폼 --- */}
-                          <div><label className={labelStyle}>이름</label><input type="text" placeholder="이름을 입력하세요" required className={inputStyle} /></div>
+                          <div>
+                            <label className={labelStyle}>이름</label>
+                            <input type="text" placeholder="이름을 입력하세요" required className={inputStyle} 
+                                   value={name} onChange={(e) => setName(e.target.value)} />
+                          </div>
                           <div>
                               <label className={labelStyle}>휴대폰 번호</label>
                               <div className="flex gap-2">
@@ -257,7 +314,11 @@ const SignUpModal: React.FC<SignUpModalProps> = ({ isOpen, onClose, onLoginModal
                                 </div>
                             </motion.div>
                           )}
-                          <div><label className={labelStyle}>이메일</label><input type="email" placeholder="이메일 주소를 입력하세요" required className={inputStyle} /></div>
+                          <div>
+                            <label className={labelStyle}>이메일</label>
+                            <input type="email" placeholder="이메일 주소를 입력하세요" required className={inputStyle}
+                                   value={email} onChange={(e) => setEmail(e.target.value)} />
+                          </div>
                           <div>
                               <label className={labelStyle}>비밀번호</label>
                               <input type="password" placeholder="8자 이상, 영문/숫자/특수문자 조합" required className={inputStyle} value={password} onChange={handlePasswordChange} />
@@ -308,7 +369,7 @@ const SignUpModal: React.FC<SignUpModalProps> = ({ isOpen, onClose, onLoginModal
                                 <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="p-4 bg-green-50 border border-green-200 rounded-lg">
                                     <p className="font-bold text-green-800">{selectedAgent.name}</p>
                                     <p className="text-sm text-green-700">{selectedAgent.address} | 대표: {selectedAgent.representative}</p>
-                                    <button onClick={() => { setSelectedAgent(null); setIsVerified(false); setPhone(''); }} className="text-xs text-red-500 hover:underline mt-1">다시 검색</button>
+                                    <button onClick={() => { setSelectedAgent(null); setIsVerified(false); setPhone(''); setName(''); setEmail(''); setPassword(''); setPasswordConfirm(''); }} className="text-xs text-red-500 hover:underline mt-1">다시 검색</button>
                                 </motion.div>
                             )}
 
@@ -317,7 +378,8 @@ const SignUpModal: React.FC<SignUpModalProps> = ({ isOpen, onClose, onLoginModal
                                     <h3 className="font-semibold text-gray-800 border-b pb-2 pt-4">2. 대표자 본인인증</h3>
                                     <div>
                                         <label className={labelStyle}>대표자명</label>
-                                        <input type="text" value={selectedAgent.representative} disabled className={`${inputStyle} bg-gray-100 cursor-not-allowed`} />
+                                        {/* [수정] 대표자명(name)을 state로 관리 */}
+                                        <input type="text" value={name} onChange={(e) => setName(e.target.value)} required className={inputStyle} />
                                     </div>
                                     <div>
                                         <label className={labelStyle}>휴대폰 번호</label>
@@ -341,7 +403,11 @@ const SignUpModal: React.FC<SignUpModalProps> = ({ isOpen, onClose, onLoginModal
                                     )}
 
                                     <h3 className="font-semibold text-gray-800 border-b pb-2 pt-4">3. 계정 정보 생성</h3>
-                                    <div><label className={labelStyle}>이메일 (아이디)</label><input type="email" placeholder="사용하실 이메일 주소를 입력하세요" required className={inputStyle} /></div>
+                                    <div>
+                                        <label className={labelStyle}>이메일 (아이디)</label>
+                                        <input type="email" placeholder="사용하실 이메일 주소를 입력하세요" required className={inputStyle}
+                                               value={email} onChange={(e) => setEmail(e.target.value)} />
+                                    </div>
                                     <div>
                                         <label className={labelStyle}>비밀번호</label>
                                         <input type="password" placeholder="8자 이상, 영문/숫자/특수문자 조합" required className={inputStyle} value={password} onChange={handlePasswordChange} />
@@ -359,6 +425,12 @@ const SignUpModal: React.FC<SignUpModalProps> = ({ isOpen, onClose, onLoginModal
               </div>
 
               <div className="p-8 pt-6 mt-auto border-t">
+                {/* [추가] 폼 에러 메시지 표시 */}
+                {formError && (
+                    <div className="text-red-500 text-sm text-center mb-4">
+                        {formError}
+                    </div>
+                )}
                 <div>
                     <label className="flex items-center gap-2 text-xs text-gray-500"><input type="checkbox" required className="rounded border-gray-300 text-harubang-blue focus:ring-harubang-blue" /> <span>(필수) 서비스 이용약관 및 개인정보처리방침에 동의합니다.</span></label>
                 </div>
@@ -374,4 +446,3 @@ const SignUpModal: React.FC<SignUpModalProps> = ({ isOpen, onClose, onLoginModal
 };
 
 export default SignUpModal;
-

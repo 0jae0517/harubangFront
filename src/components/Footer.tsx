@@ -60,7 +60,7 @@ const Footer: React.FC = () => (
       
       {/* Copyright */}
       <div className="mt-16 pt-8 border-t border-gray-100 text-sm text-gray-400">
-        <p className="mb-1">(주)하루방 | 대표: 유승현 | 사업자등록번호: -</p>
+        <p className="mb-1">(주)하루방 | 대표: 조영재 | 사업자등록번호: -</p>
         <p>&copy; {new Date().getFullYear()} Harubang Inc. All rights reserved.</p>
       </div>
     </div>
