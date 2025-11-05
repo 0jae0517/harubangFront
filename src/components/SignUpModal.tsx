@@ -1,43 +1,48 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Search } from 'lucide-react';
-import axios from 'axios'; // [수정] axios import
+import axios from 'axios'; // API 호출용
 
-import { agentDatabase } from '../data_temp/AgentMockData'; // 가상 데이터베이스 import
-import type { AgentInfo } from '../data_temp/AgentMockData'; // 타입 import
-import Spinner from './common/Spinner'; 
+// [삭제] 가짜 데이터 import 삭제
+import Spinner from './common/Spinner'; // 로딩 스피너
 
-// [추가] 백엔드 API 기본 URL
+// 백엔드 API 기본 URL (src/.env 파일에서 읽어옴)
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080';
 
-// [복구] SignUpModalProps 인터페이스 정의
+// 1. 모달 Props 인터페이스
 interface SignUpModalProps {
   isOpen: boolean;
   onClose: () => void;
   onLoginModalOpen: () => void;
 }
 
-// [복구] 비밀번호 유효성 검사 함수 (8자 이상, 영문, 숫자, 특수문자 포함)
+// 2. [수정] 백엔드 API 응답(Item)과 일치하는 프론트엔드용 인터페이스
+interface AgentSearchResultItem {
+    registrationNumber: string; // "ESTBL_REG_NO"
+    officeName: string;         // "MED_OFFICE_NM"
+    representativeName: string; // "RPRSV_NM"
+    roadAddress: string;        // "LCTN_ROAD_NM_ADDR"
+}
+
+// 3. 비밀번호 유효성 검사 함수 (_ 포함)
 const validatePassword = (password: string): boolean => {
-    // [수정] _(언더스코어)를 특수문자에 포함
     const passwordRegex = /^(?=.*[a-zA-Z])(?=.*[!@#$%^*+=-_])(?=.*[0-9]).{8,25}$/;
     return passwordRegex.test(password);
 }
 
 
+// 4. 메인 컴포넌트
 const SignUpModal: React.FC<SignUpModalProps> = ({ isOpen, onClose, onLoginModalOpen }) => {
   const [userType, setUserType] = useState<'customer' | 'agent'>('customer');
   
-  // [수정] 회원가입 폼 상태 추가
+  // 폼 입력 상태
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [passwordConfirm, setPasswordConfirm] = useState('');
   
-  // [수정] 에러 메시지 상태 추가
+  // 에러 메시지 상태
   const [formError, setFormError] = useState('');
-  
-  // 오류 메시지 상태
   const [passwordError, setPasswordError] = useState('');
   const [passwordConfirmError, setPasswordConfirmError] = useState('');
 
@@ -46,18 +51,17 @@ const SignUpModal: React.FC<SignUpModalProps> = ({ isOpen, onClose, onLoginModal
   const [authCode, setAuthCode] = useState('');
   const [isCodeSent, setIsCodeSent] = useState(false);
   const [isVerified, setIsVerified] = useState(false);
-  const [timer, setTimer] = useState(180); // 3분 타이머
+  const [timer, setTimer] = useState(180); 
 
   // 중개사 검색/선택 상태
   const [searchQuery, setSearchQuery] = useState('');
-  const [searchResults, setSearchResults] = useState<AgentInfo[]>([]);
-  const [selectedAgent, setSelectedAgent] = useState<AgentInfo | null>(null);
-  const [isSearching, setIsSearching] = useState(false);
+  const [searchResults, setSearchResults] = useState<AgentSearchResultItem[]>([]);
+  const [selectedAgent, setSelectedAgent] = useState<AgentSearchResultItem | null>(null);
+  const [isSearching, setIsSearching] = useState(false); // 검색 API 호출 중 로딩
 
 
-  // userType이 바뀔 때 모든 상태 초기화
+  // userType이 바뀌거나 모달이 열릴 때 모든 상태 초기화
   useEffect(() => {
-    // [수정] 새 폼 상태도 초기화
     setName('');
     setEmail('');
     setPassword('');
@@ -75,7 +79,7 @@ const SignUpModal: React.FC<SignUpModalProps> = ({ isOpen, onClose, onLoginModal
     setSelectedAgent(null);
   }, [userType, isOpen]);
   
-  // 타이머 효과
+  // 인증 타이머 효과
   useEffect(() => {
     if (isCodeSent && timer > 0) {
       const countdown = setInterval(() => {
@@ -85,10 +89,54 @@ const SignUpModal: React.FC<SignUpModalProps> = ({ isOpen, onClose, onLoginModal
     }
   }, [isCodeSent, timer]);
 
+  
+  // [수정] 디바운싱(Debouncing)을 이용한 자동 검색 기능
+  useEffect(() => {
+      // 1. 검색어가 비어있거나, 이미 중개사를 선택했다면 검색 중단
+      if (!searchQuery.trim() || selectedAgent) {
+          setSearchResults([]);
+          setIsSearching(false);
+          setFormError('');
+          return;
+      }
 
+      setIsSearching(true); // 검색어 입력 시작 시 스피너 표시
+      setFormError('');
+
+      // 2. 500ms(0.5초) 딜레이 타이머 설정
+      const delayDebounceFn = setTimeout(async () => {
+          try {
+              // 3. 0.5초 후 API 호출
+              const response = await axios.get(`${API_BASE_URL}/api/agent-licenses/search`, {
+                  params: {
+                      query: searchQuery
+                  }
+              });
+
+              if (response.data.length === 0) {
+                  setFormError('검색 결과가 없습니다.');
+              }
+              setSearchResults(response.data);
+
+          } catch (err) {
+              console.error("Agent search error:", err);
+              setFormError('검색 중 오류가 발생했습니다.');
+          } finally {
+              setIsSearching(false); // API 호출 완료 시 스피너 숨김
+          }
+      }, 500); // 500ms (0.5초) 딜레이
+
+      // 4. [중요] 사용자가 타이핑을 계속하면(searchQuery가 변경되면)
+      //    이전 타이머를 취소하고 새 타이머를 시작 (API 호출 방지)
+      return () => clearTimeout(delayDebounceFn);
+
+  }, [searchQuery, selectedAgent]); // searchQuery가 바뀔 때마다 이 effect 실행
+
+
+  // 비밀번호 변경 핸들러
   const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newPassword = e.target.value;
-    setPassword(newPassword); // [수정] password 상태 업데이트
+    setPassword(newPassword);
     if (!validatePassword(newPassword)) {
         setPasswordError('8자 이상, 영문/숫자/특수문자를 포함해야 합니다.');
     } else {
@@ -101,9 +149,10 @@ const SignUpModal: React.FC<SignUpModalProps> = ({ isOpen, onClose, onLoginModal
     }
   };
 
+  // 비밀번호 확인 핸들러
   const handlePasswordConfirmChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newPasswordConfirm = e.target.value;
-    setPasswordConfirm(newPasswordConfirm); // [수정] passwordConfirm 상태 업데이트
+    setPasswordConfirm(newPasswordConfirm);
     if (password !== newPasswordConfirm) {
       setPasswordConfirmError('비밀번호가 일치하지 않습니다.');
     } else {
@@ -111,43 +160,17 @@ const SignUpModal: React.FC<SignUpModalProps> = ({ isOpen, onClose, onLoginModal
     }
   };
 
-  // 중개사 검색 함수
-  const handleSearchAgent = () => {
-      if (!searchQuery.trim()) {
-          alert('중개등록번호 또는 상호명을 입력해주세요.');
-          return;
-      }
-      setIsSearching(true);
-      setSearchResults([]);
-      setSelectedAgent(null);
-
-      // API 호출 시뮬레이션
-      setTimeout(() => {
-          const results = agentDatabase.filter(agent => 
-              agent.registrationNumber.includes(searchQuery) || agent.name.includes(searchQuery)
-          );
-          setSearchResults(results);
-          setIsSearching(false);
-      }, 1000);
-  };
-
-  // Enter 키로 검색을 실행하는 함수
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter') {
-      e.preventDefault(); // form 태그의 기본 Enter 동작(제출)을 막습니다.
-      handleSearchAgent();
-    }
-  };
+  // [삭제] handleSearchAgent, handleKeyDown 함수 삭제됨
 
   // 중개사 선택 함수
-  const handleSelectAgent = (agent: AgentInfo) => {
+  const handleSelectAgent = (agent: AgentSearchResultItem) => {
       setSelectedAgent(agent);
       setSearchResults([]);
-      setSearchQuery('');
-      // [수정] 중개사 선택 시 '대표자명'을 'name' 상태에 자동 입력
-      setName(agent.representative); 
+      setSearchQuery(''); // 검색창 비우기
+      setName(agent.representativeName); // 대표자명 자동 입력
   }
 
+  // 인증번호 요청 핸들러
   const handleRequestAuthCode = () => {
       if(phone.length < 10) {
           alert('올바른 휴대폰 번호를 입력해주세요.');
@@ -156,11 +179,11 @@ const SignUpModal: React.FC<SignUpModalProps> = ({ isOpen, onClose, onLoginModal
       setIsCodeSent(true);
       setTimer(180);
       alert('인증번호가 발송되었습니다.');
-      // 실제로는 여기서 SMS 발송 API를 호출합니다.
+      // (실제 SMS API 연동 필요)
   }
 
+  // 인증번호 확인 핸들러
   const handleConfirmAuthCode = () => {
-      // 실제로는 여기서 인증번호 확인 API를 호출합니다.
       if (authCode === '123456') { // 임시 인증번호
         setIsVerified(true);
         setIsCodeSent(false);
@@ -170,10 +193,10 @@ const SignUpModal: React.FC<SignUpModalProps> = ({ isOpen, onClose, onLoginModal
       }
   }
 
-  // [수정] 최종 가입 로직 (백엔드 연동)
-  const handleSignUp = async (e: React.FormEvent) => { // async 추가
+  // 최종 회원가입 핸들러
+  const handleSignUp = async (e: React.FormEvent) => { 
       e.preventDefault();
-      setFormError(''); // 에러 초기화
+      setFormError(''); 
       
       const isPasswordValid = validatePassword(password);
       const isPasswordConfirmed = password === passwordConfirm;
@@ -182,23 +205,19 @@ const SignUpModal: React.FC<SignUpModalProps> = ({ isOpen, onClose, onLoginModal
           setFormError('비밀번호를 확인해주세요.');
           return;
       }
-
       if (userType === 'customer' && !isVerified) {
           setFormError('휴대폰 인증을 완료해주세요.');
           return;
       }
-
       if (userType === 'agent' && !selectedAgent) {
           setFormError('소속된 중개사무소를 선택해주세요.');
           return;
       }
-
        if (userType === 'agent' && !isVerified) {
           setFormError('대표자 본인인증을 완료해주세요.');
           return;
       }
 
-      // [수정] alert 대신 백엔드 API 호출
       try {
           if (userType === 'customer') {
               // 고객 회원가입 API 호출
@@ -209,27 +228,24 @@ const SignUpModal: React.FC<SignUpModalProps> = ({ isOpen, onClose, onLoginModal
                   phone: phone
               });
           } else if (userType === 'agent' && selectedAgent) {
-              // 중개사 회원가입 API 호출
+              // 중개사 회원가입 API 호출 (API DTO 필드명으로 전송)
               await axios.post(`${API_BASE_URL}/api/auth/signup/agent`, {
                   email: email,
                   password: password,
                   name: name, // 대표자명
                   phone: phone,
                   registrationNumber: selectedAgent.registrationNumber,
-                  officeName: selectedAgent.name,
-                  officeAddress: selectedAgent.address
+                  officeName: selectedAgent.officeName,
+                  officeAddress: selectedAgent.roadAddress
               });
           }
 
-          // [수정] 성공 시
           alert('회원가입이 완료되었습니다! 로그인해주세요.');
           onClose();
           onLoginModalOpen();
 
       } catch (err: any) {
-          // [수정] 실패 시
           if (axios.isAxiosError(err) && err.response) {
-              // 백엔드에서 보낸 에러 메시지(예: "이미 사용 중인 이메일입니다.") 표시
               setFormError(err.response.data || '회원가입에 실패했습니다.');
           } else {
               setFormError('회원가입 중 오류가 발생했습니다.');
@@ -238,6 +254,7 @@ const SignUpModal: React.FC<SignUpModalProps> = ({ isOpen, onClose, onLoginModal
       }
   };
 
+  // 탭 스타일링 함수
   const getTabClassName = (type: 'customer' | 'agent') => {
     const baseClasses = "w-1/2 py-3 text-center text-lg font-bold focus:outline-none transition-colors duration-300";
     if (userType === type) {
@@ -255,6 +272,7 @@ const SignUpModal: React.FC<SignUpModalProps> = ({ isOpen, onClose, onLoginModal
   const inputStyle = "w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-harubang-blue";
   const labelStyle = "block text-sm font-medium text-gray-700 mb-1";
 
+  // JSX 렌더링
   return (
     <AnimatePresence>
       {isOpen && (
@@ -272,7 +290,7 @@ const SignUpModal: React.FC<SignUpModalProps> = ({ isOpen, onClose, onLoginModal
               className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition-colors z-20"
               aria-label="닫기"
             >
-              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
             </button>
             
             <div className="p-8 pb-6 flex-shrink-0">
@@ -286,6 +304,7 @@ const SignUpModal: React.FC<SignUpModalProps> = ({ isOpen, onClose, onLoginModal
             </div>
 
             <form onSubmit={handleSignUp} className="flex-grow flex flex-col overflow-hidden">
+              {/* 스크롤 영역 */}
               <div className="overflow-y-auto px-8 pb-6">
                   {userType === 'customer' ? (
                       <div className="space-y-4">
@@ -341,44 +360,47 @@ const SignUpModal: React.FC<SignUpModalProps> = ({ isOpen, onClose, onLoginModal
                                       type="search" 
                                       placeholder="중개등록번호 입력 시 '-' 포함 " 
                                       className={inputStyle} 
-                                      value={searchQuery} 
-                                      onChange={(e) => setSearchQuery(e.target.value)} 
-                                      onKeyDown={handleKeyDown}
+                                      value={searchQuery}
+                                      // [수정] onChange로 searchQuery 상태만 업데이트
+                                      onChange={(e) => setSearchQuery(e.target.value)}
                                       disabled={!!selectedAgent}
                                     />
-                                    <button type="button" onClick={handleSearchAgent} className="bg-harubang-blue text-white p-3 rounded-lg flex-shrink-0 hover:bg-harubang-blue-dark" disabled={!!selectedAgent}>
+                                    {/* [수정] 검색 버튼 비활성화 (아이콘만 표시) */}
+                                    <span className="bg-gray-100 text-gray-400 p-3 rounded-lg flex-shrink-0">
                                         <Search size={20} />
-                                    </button>
+                                    </span>
                                 </div>
                             </div>
                             
                             {isSearching && <div className="flex justify-center py-4"><Spinner /></div>}
 
+                            {/* [수정] 검색 결과 리스트 렌더링 (API 응답 기반) */}
                             {searchResults.length > 0 && (
                                 <ul className="border rounded-lg max-h-40 overflow-y-auto">
                                     {searchResults.map(agent => (
-                                        <li key={agent.id} onClick={() => handleSelectAgent(agent)} className="p-3 hover:bg-harubang-sky/50 cursor-pointer border-b last:border-b-0">
-                                            <p className="font-semibold">{agent.name}</p>
-                                            <p className="text-sm text-gray-500">{agent.address} | 대표: {agent.representative}</p>
+                                        <li key={agent.registrationNumber} onClick={() => handleSelectAgent(agent)} className="p-3 hover:bg-harubang-sky/50 cursor-pointer border-b last:border-b-0">
+                                            <p className="font-semibold">{agent.officeName}</p>
+                                            <p className="text-sm text-gray-500">{agent.roadAddress} | 대표: {agent.representativeName}</p>
                                         </li>
                                     ))}
                                 </ul>
                             )}
 
+                            {/* 선택된 중개사 정보 */}
                             {selectedAgent && (
                                 <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="p-4 bg-green-50 border border-green-200 rounded-lg">
-                                    <p className="font-bold text-green-800">{selectedAgent.name}</p>
-                                    <p className="text-sm text-green-700">{selectedAgent.address} | 대표: {selectedAgent.representative}</p>
+                                    <p className="font-bold text-green-800">{selectedAgent.officeName}</p>
+                                    <p className="text-sm text-green-700">{selectedAgent.roadAddress} | 대표: {selectedAgent.representativeName}</p>
                                     <button onClick={() => { setSelectedAgent(null); setIsVerified(false); setPhone(''); setName(''); setEmail(''); setPassword(''); setPasswordConfirm(''); }} className="text-xs text-red-500 hover:underline mt-1">다시 검색</button>
                                 </motion.div>
                             )}
 
+                            {/* 2단계, 3단계 폼 (selectedAgent가 있을 때만 보임) */}
                             {selectedAgent && (
                                 <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-4">
                                     <h3 className="font-semibold text-gray-800 border-b pb-2 pt-4">2. 대표자 본인인증</h3>
                                     <div>
                                         <label className={labelStyle}>대표자명</label>
-                                        {/* [수정] 대표자명(name)을 state로 관리 */}
                                         <input type="text" value={name} onChange={(e) => setName(e.target.value)} required className={inputStyle} />
                                     </div>
                                     <div>
@@ -424,8 +446,8 @@ const SignUpModal: React.FC<SignUpModalProps> = ({ isOpen, onClose, onLoginModal
                   )}
               </div>
 
+              {/* 하단 버튼 영역 */}
               <div className="p-8 pt-6 mt-auto border-t">
-                {/* [추가] 폼 에러 메시지 표시 */}
                 {formError && (
                     <div className="text-red-500 text-sm text-center mb-4">
                         {formError}
