@@ -350,11 +350,11 @@ const SignUpModal: React.FC<SignUpModalProps> = ({ isOpen, onClose, onLoginModal
                            {/* --- 중개사 회원 폼 --- */}
                             <h3 className="font-semibold text-gray-800 border-b pb-2">1. 중개사무소 검색</h3>
                             <div>
-                                <label className={labelStyle}>중개등록번호 또는 상호명</label>
+                                <label className={labelStyle}>중개등록번호</label>
                                 <div className="flex gap-2">
                                     <input 
                                       type="search" 
-                                      placeholder="정확한 상호명 또는 개설등록번호" 
+                                      placeholder="'-' 을 포함한 중개등록번호 전체" 
                                       className={inputStyle}
                                       // [수정 2] value={searchQuery || ''}로 '제어/비제어' 오류 수정
                                       value={searchQuery || ''}
