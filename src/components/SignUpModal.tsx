@@ -16,10 +16,10 @@ interface SignUpModalProps {
 
 // 2. 백엔드 API 응답(Item)과 일치하는 프론트엔드용 인터페이스
 interface AgentSearchResultItem {
-    registrationNumber: string; 
-    officeName: string;         
-    representativeName: string; 
-    roadAddress: string;        
+    estblRegNo: string; 
+    medOfficeNm: string;         
+    rprsvNm: string; // [수정됨]
+    lctnRoadNmAddr: string;        
 }
 
 // 3. 비밀번호 유효성 검사 함수 (_ 포함)
@@ -161,8 +161,8 @@ const SignUpModal: React.FC<SignUpModalProps> = ({ isOpen, onClose, onLoginModal
       setSearchResults([]);          
       
       // [수정] null일 수도 있는 값을 대비하여 || '' (빈 문자열) 처리
-      setSearchQuery(agent.officeName || ''); 
-      setName(agent.representativeName || ''); 
+      setSearchQuery(agent.estblRegNo || ''); 
+      setName(agent.rprsvNm || ''); // [수정됨]
   }
 
   // 인증번호 요청 핸들러
@@ -229,9 +229,9 @@ const SignUpModal: React.FC<SignUpModalProps> = ({ isOpen, onClose, onLoginModal
                   password: password,
                   name: name, // 대표자명
                   phone: phone,
-                  registrationNumber: selectedAgent.registrationNumber,
-                  officeName: selectedAgent.officeName,
-                  officeAddress: selectedAgent.roadAddress
+                  registrationNumber: selectedAgent.estblRegNo,
+                  officeName: selectedAgent.medOfficeNm,
+                  officeAddress: selectedAgent.lctnRoadNmAddr
               });
           }
 
@@ -364,20 +364,20 @@ const SignUpModal: React.FC<SignUpModalProps> = ({ isOpen, onClose, onLoginModal
                                     <span className="bg-gray-100 text-gray-400 p-3 rounded-lg flex-shrink-0">
                                         <Search size={20} />
                                     </span>
-                                </div>
+                               </div>
                             </div>
                             
                             {isSearching && <div className="flex justify-center py-4"><Spinner /></div>}
 
                             {/* 검색 결과 리스트 */}
-                           {searchResults.length > 0 && (
+                            {searchResults.length > 0 && (
                                 <ul className="border rounded-lg max-h-40 overflow-y-auto">
                                     {searchResults.map(agent => (
-                                        // [수정 3] React 경고를 없애기 위해 key prop 추가
-                                        <li key={agent.registrationNumber} onClick={() => handleSelectAgent(agent)} className="p-3 hover:bg-harubang-sky/50 cursor-pointer border-b last:border-b-0">
-                                            <p className="font-semibold">{agent.officeName}</p>
-                                            <p className="text-sm text-gray-500">{agent.roadAddress} | 대표: {agent.representativeName}</p>
-                                        </li>
+                                          // [수정 3] React 경고를 없애기 위해 key prop 추가
+                                        <li key={agent.estblRegNo} onClick={() => handleSelectAgent(agent)} className="p-3 hover:bg-harubang-sky/50 cursor-pointer border-b last:border-b-0">
+                                            <p className="font-semibold">{agent.medOfficeNm}</p>
+                                            <p className="text-sm text-gray-500">{agent.lctnRoadNmAddr} | 대표: {agent.rprsvNm}</p>
+                                      </li>
                                     ))}
                                 </ul>
                             )}
@@ -385,8 +385,8 @@ const SignUpModal: React.FC<SignUpModalProps> = ({ isOpen, onClose, onLoginModal
                             {/* 선택된 중개사 정보 */}
                             {selectedAgent && (
                                 <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="p-4 bg-green-50 border border-green-200 rounded-lg">
-                                    <p className="font-bold text-green-800">{selectedAgent.officeName}</p>
-                                    <p className="text-sm text-green-700">{selectedAgent.roadAddress} | 대표: {selectedAgent.representativeName}</p>
+                                   <p className="font-bold text-green-800">{selectedAgent.medOfficeNm} | 대표: {selectedAgent.rprsvNm}</p>
+                                   <p className="text-sm text-green-700">{selectedAgent.lctnRoadNmAddr}</p>
                                     <button onClick={() => {
                                         setSelectedAgent(null); 
                                         setIsVerified(false); 
@@ -406,14 +406,20 @@ const SignUpModal: React.FC<SignUpModalProps> = ({ isOpen, onClose, onLoginModal
                                     <h3 className="font-semibold text-gray-800 border-b pb-2 pt-4">2. 대표자 본인인증</h3>
                                     <div>
                                         <label className={labelStyle}>대표자명</label>
-                                        <input type="text" value={name} onChange={(e) => setName(e.target.value)} required className={inputStyle} />
+                                        <input
+                                          type="text"
+                                          value={name}
+                                          required
+                                          className={`${inputStyle} bg-gray-100 cursor-not-allowed`}
+                                          readOnly
+                                        />
                                     </div>
                                     <div>
                                         <label className={labelStyle}>휴대폰 번호</label>
                                         <div className="flex gap-2">
                                             <input type="tel" placeholder="'-' 없이 숫자만 입력" required className={inputStyle} value={phone} onChange={(e) => setPhone(e.target.value)} disabled={isVerified} />
                                             <button type="button" onClick={handleRequestAuthCode} disabled={isCodeSent || isVerified} className="bg-gray-200 text-gray-700 font-semibold px-4 rounded-lg text-sm flex-shrink-0 hover:bg-gray-300 disabled:bg-gray-100 disabled:text-gray-400">
-                                                {isVerified ? '인증완료' : '인증요청'}
+                                          {isVerified ? '인증완료' : '인증요청'}
                                             {/* [오류 수정 1] 446라인의 잘못된 텍스트 삭제 */}
                                             </button>
                                         </div>
@@ -433,9 +439,9 @@ const SignUpModal: React.FC<SignUpModalProps> = ({ isOpen, onClose, onLoginModal
                                     <h3 className="font-semibold text-gray-800 border-b pb-2 pt-4">3. 계정 정보 생성</h3>
                                     <div>
                                         <label className={labelStyle}>이메일 (아이디)</label>
-                                        <input type="email" placeholder="사용하실 이메일 주소를 입력하세요" required className={inputStyle}
+                                  <input type="email" placeholder="사용하실 이메일 주소를 입력하세요" required className={inputStyle}
                                                value={email} onChange={(e) => setEmail(e.target.value)} />
-                                    </div>
+                                  </div>
                                     <div>
                                         <label className={labelStyle}>비밀번호</label>
                                         <input type="password" placeholder="8자 이상, 영문/숫자/특수문자 조합" required className={inputStyle} value={password} onChange={handlePasswordChange} />
@@ -457,7 +463,7 @@ const SignUpModal: React.FC<SignUpModalProps> = ({ isOpen, onClose, onLoginModal
               <div className="p-8 pt-6 mt-auto border-t">
                 {formError && (
                     <div className="text-red-500 text-sm text-center mb-4">
-                        {formError}
+                           {formError}
                     </div>
                 )}
                 <div>
@@ -465,8 +471,7 @@ const SignUpModal: React.FC<SignUpModalProps> = ({ isOpen, onClose, onLoginModal
                 </div>
                 <div><button type="submit" disabled={isSubmitDisabled} className="w-full bg-harubang-blue text-white font-bold py-3 rounded-lg hover:bg-harubang-blue-dark transition-colors mt-4 disabled:bg-gray-400 disabled:cursor-not-allowed">가입하기</button></div>
               </div>
-            </form>
-            
+            </form>           
           </motion.div>
         </div>
       )}
