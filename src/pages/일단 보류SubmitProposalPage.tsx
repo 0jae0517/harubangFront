@@ -24,10 +24,10 @@
 //                     <p className="text-harubang-ink-light mt-2">고객(신청서 ID: {requestId})의 조건에 맞는 매물 정보를 입력해주세요.</p>
 //                 </motion.div>
 
-//                 <motion.form 
+//                 <motion.form
 //                     onSubmit={handleSubmit}
-//                     initial={{ opacity: 0, y: 20 }} 
-//                     animate={{ opacity: 1, y: 0 }} 
+//                     initial={{ opacity: 0, y: 20 }}
+//                     animate={{ opacity: 1, y: 0 }}
 //                     transition={{ delay: 0.2 }}
 //                     className="mt-8 bg-white rounded-xl shadow-md p-8 space-y-8"
 //                 >
@@ -83,9 +83,9 @@
 //                     {/* 상세 정보 */}
 //                     <div>
 //                         <h2 className="text-xl font-semibold flex items-center gap-2 mb-4"><Text size={20} /> 상세 설명</h2>
-//                         <textarea 
-//                             rows={5} 
-//                             placeholder="매물의 특징과 장점을 자세하게 설명해주세요. (예: 역세권, 남향, 시스템에어컨 완비)" 
+//                         <textarea
+//                             rows={5}
+//                             placeholder="매물의 특징과 장점을 자세하게 설명해주세요. (예: 역세권, 남향, 시스템에어컨 완비)"
 //                             className={inputStyle}
 //                         ></textarea>
 //                     </div>

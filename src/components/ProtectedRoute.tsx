@@ -1,6 +1,6 @@
 //신청서 작성 시 로그인이 되어있지 않으면 로그인 페이지로 보내기
-import React, { useEffect } from 'react';
-import { Navigate } from 'react-router-dom';
+import React, { useEffect } from "react";
+import { Navigate } from "react-router-dom";
 
 interface ProtectedRouteProps {
   isLoggedIn: boolean;
@@ -8,7 +8,11 @@ interface ProtectedRouteProps {
   children: React.ReactElement;
 }
 
-const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ isLoggedIn, onLoginModalOpen, children }) => {
+const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
+  isLoggedIn,
+  onLoginModalOpen,
+  children,
+}) => {
   useEffect(() => {
     // 만약 로그인 상태가 아니라면,
     if (!isLoggedIn) {
