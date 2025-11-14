@@ -29,7 +29,7 @@ const Header: React.FC<HeaderProps> = ({ isLoggedIn, userRole, onLoginModalOpen,
             <img src={harubangLogo} alt="하루방 로고" className="h-10 w-auto" />
           </Link>
           
-          <div className="hidden md:flex items-center gap-8 font-semibold">
+          <div className="hidden md:flex items-center gap-28 font-semibold">
               <NavLink to="/about" className={getNavStyle}>서비스 소개</NavLink>
               <NavLink to="/apply" className={getNavStyle}>신청서 작성</NavLink>
               <NavLink to="/faq" className={getNavStyle}>FAQ</NavLink>

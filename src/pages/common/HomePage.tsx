@@ -5,20 +5,20 @@ import { motion } from 'framer-motion';
 import { ClipboardList, MessageSquare, Users, UserCheck, BadgePercent, MessageCircle } from 'lucide-react';
 
 const HomePage: React.FC = () => {
-  return (
-    <div className="bg-white font-sans text-harubang-ink">
-      {/* Hero Section */}
-      <section className="relative h-[60vh] md:h-[50vh] flex items-center text-white">
-        {/* Background Image */}
-        <div 
-          className="absolute inset-0 bg-cover bg-center"
-          // 2. import한 변수를 사용하여 style 속성을 수정합니다.
-          style={{ backgroundImage: `url(${HomeBackground})` }}
-        ></div>
-        {/* Overlay */}
-        <div className="absolute inset-0 bg-black/50"></div>
+  return (
+    <div className="bg-white font-sans text-harubang-ink">
+      {/* Hero Section */}
+      <section className="relative h-[60vh] md:h-[50vh] flex items-center text-white">
+        {/* Background Image */}
+          <div 
+          className="absolute inset-0 bg-cover bg-center"
+          // 2. import한 변수를 사용하여 style 속성을 수정합니다.
+          style={{ backgroundImage: `url(${HomeBackground})` }}
+        ></div>
+        {/* Overlay */}
+        <div className="absolute inset-0 bg-black/50"></div>
 
-        <div className="relative z-10 container mx-auto px-6 text-left">
+        <div className="relative z-10 container mx-auto px-6 pl-28 text-left">
             <motion.h1 
               className="text-4xl md:text-5xl font-bold mb-6 flex flex-col gap-y-4" // flex, flex-col, gap-y-* 로 간격 조절
               initial={{ opacity: 0, y: 20 }}
