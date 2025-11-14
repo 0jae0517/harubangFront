@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import harubangLogo from "../assets/logo.png";
 import axios from "axios"; // [추가] axios import
 
@@ -31,9 +31,6 @@ const LoginModal: React.FC<LoginModalProps> = ({
     // [수정] async 추가
     e.preventDefault();
     setError(""); // 에러 초기화
-
-    // [수정] 가상 로그인 로직 (admin@) 삭제
-    // if (email === 'admin@harubang.com' && password === 'admin1234!') { ... }
 
     try {
       // [추가] 백엔드에 로그인 요청 (/api/auth/login)
@@ -83,8 +80,7 @@ const LoginModal: React.FC<LoginModalProps> = ({
   };
 
   const getTabClassName = (type: "customer" | "agent") => {
-    // ... (이 부분은 변경 없음) ...
-    const baseClasses =
+      const baseClasses =
       "w-1/2 py-3 text-center text-lg font-bold focus:outline-none transition-colors duration-300";
     if (userType === type) {
       return `${baseClasses} text-harubang-blue border-b-2 border-harubang-blue`;
