@@ -267,10 +267,8 @@ const SignUpModal: React.FC<SignUpModalProps> = ({
 
   return (
     <AnimatePresence>
-           {" "}
       {isOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-                   {" "}
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -278,14 +276,12 @@ const SignUpModal: React.FC<SignUpModalProps> = ({
             onClick={onClose}
             className="fixed inset-0 bg-black/50"
           />
-                              {" "}
           <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.95 }}
             className="relative w-full max-w-lg bg-white rounded-2xl shadow-xl z-10 flex flex-col max-h-[90vh]"
           >
-                       {" "}
             <button
               onClick={onClose}
               className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition-colors z-20"
@@ -307,54 +303,39 @@ const SignUpModal: React.FC<SignUpModalProps> = ({
                 <line x1="18" y1="6" x2="6" y2="18"></line>
                 <line x1="6" y1="6" x2="18" y2="18"></line>
               </svg>
-                         {" "}
             </button>
-                                    {" "}
             <div className="p-8 pb-6 flex-shrink-0">
-                             {" "}
               <div className="text-center mb-6">
-                                 {" "}
                 <h2 className="text-2xl font-bold text-harubang-ink">
                   회원가입
                 </h2>
-                               {" "}
               </div>
-                             {" "}
               <div className="flex">
-                                 {" "}
                 <button
                   onClick={() => setUserType("customer")}
                   className={getTabClassName("customer")}
                 >
                   일반 회원
                 </button>
-                                 {" "}
                 <button
                   onClick={() => setUserType("agent")}
                   className={getTabClassName("agent")}
                 >
                   공인중개사 회원
                 </button>
-                               {" "}
               </div>
-                         {" "}
             </div>
-                       {" "}
             <form
               onSubmit={handleSignUp}
               className="flex-grow flex flex-col overflow-hidden"
             >
-                            {/* 스크롤 영역 */}             {" "}
+                            {/* 스크롤 영역 */}
               <div className="overflow-y-auto px-8 pb-6">
-                                 {" "}
                 {userType === "customer" ? (
                   <div className="space-y-4">
                                               {/* --- 일반 회원 폼 --- */}     
-                                       {" "}
                     <div>
-                                                 {" "}
                       <label className={labelStyle}>이름</label>               
-                                 {" "}
                       <input
                         type="text"
                         placeholder="이름을 입력하세요"
@@ -363,15 +344,10 @@ const SignUpModal: React.FC<SignUpModalProps> = ({
                         value={name}
                         onChange={(e) => setName(e.target.value)}
                       />
-                                               {" "}
                     </div>
-                                             {" "}
                     <div>
-                                                   {" "}
                       <label className={labelStyle}>휴대폰 번호</label>         
-                                         {" "}
                       <div className="flex gap-2">
-                                                         {" "}
                         <input
                           type="tel"
                           placeholder="'-' 없이 숫자만 입력"
@@ -381,33 +357,24 @@ const SignUpModal: React.FC<SignUpModalProps> = ({
                           onChange={(e) => setPhone(e.target.value)}
                           disabled={isVerified}
                         />
-                                                         {" "}
                         <button
                           type="button"
                           onClick={handleRequestAuthCode}
                           disabled={isCodeSent || isVerified}
                           className="bg-gray-200 text-gray-700 font-semibold px-4 rounded-lg text-sm flex-shrink-0 hover:bg-gray-300 disabled:bg-gray-100 disabled:text-gray-400 disabled:cursor-not-allowed"
                         >
-                                                               {" "}
                           {isVerified ? "인증완료" : "인증요청"}               
-                                           {" "}
                         </button>
-                                                     {" "}
                       </div>
-                                               {" "}
                     </div>
-                                             {" "}
                     {isCodeSent && (
                       <motion.div
                         initial={{ opacity: 0, height: 0 }}
                         animate={{ opacity: 1, height: "auto" }}
                         className="space-y-2"
                       >
-                                                       {" "}
                         <label className={labelStyle}>인증번호</label>         
-                                             {" "}
                         <div className="flex gap-2 relative">
-                                                             {" "}
                           <input
                             type="text"
                             placeholder="인증번호 6자리 입력"
@@ -416,9 +383,7 @@ const SignUpModal: React.FC<SignUpModalProps> = ({
                             value={authCode}
                             onChange={(e) => setAuthCode(e.target.value)}
                           />
-                                                             {" "}
                           <span className="absolute right-28 top-1/2 -translate-y-1/2 text-sm text-red-500">{`${Math.floor(timer / 60)}:${(timer % 60).toString().padStart(2, "0")}`}</span>
-                                                             {" "}
                           <button
                             type="button"
                             onClick={handleConfirmAuthCode}
@@ -426,16 +391,11 @@ const SignUpModal: React.FC<SignUpModalProps> = ({
                           >
                             확인
                           </button>
-                                                         {" "}
                         </div>
-                                                   {" "}
                       </motion.div>
                     )}
-                                             {" "}
                     <div>
-                                                 {" "}
                       <label className={labelStyle}>이메일</label>             
-                                   {" "}
                       <input
                         type="email"
                         placeholder="이메일 주소를 입력하세요"
@@ -444,13 +404,9 @@ const SignUpModal: React.FC<SignUpModalProps> = ({
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
                       />
-                                               {" "}
                     </div>
-                                             {" "}
                     <div>
-                                                   {" "}
                       <label className={labelStyle}>비밀번호</label>           
-                                       {" "}
                       <input
                         type="password"
                         placeholder="8자 이상, 영문/숫자/특수문자 조합"
@@ -459,19 +415,14 @@ const SignUpModal: React.FC<SignUpModalProps> = ({
                         value={password}
                         onChange={handlePasswordChange}
                       />
-                                                   {" "}
                       {passwordError && (
                         <p className="text-red-500 text-xs mt-1">
                           {passwordError}
                         </p>
                       )}
-                                         {" "}
                     </div>
-                                             {" "}
                     <div>
-                                                   {" "}
                       <label className={labelStyle}>비밀번호 확인</label>       
-                                           {" "}
                       <input
                         type="password"
                         placeholder="비밀번호를 다시 한번 입력하세요"
@@ -480,30 +431,22 @@ const SignUpModal: React.FC<SignUpModalProps> = ({
                         value={passwordConfirm}
                         onChange={handlePasswordConfirmChange}
                       />
-                                                   {" "}
                       {passwordConfirmError && (
                         <p className="text-red-500 text-xs mt-1">
                           {passwordConfirmError}
                         </p>
                       )}
-                                               {" "}
                     </div>
-                                         {" "}
                   </div>
                 ) : (
                   <div className="space-y-4">
-                                               {/* --- 중개사 회원 폼 --- */}   
-                                           {" "}
+                  {/* --- 중개사 회원 폼 --- */}   
                     <h3 className="font-semibold text-gray-800 border-b pb-2">
                       1. 중개사무소 검색
                     </h3>
-                                               {" "}
                     <div>
-                                                     {" "}
                       <label className={labelStyle}>중개등록번호</label>       
-                                             {" "}
                       <div className="flex gap-2">
-                                                           {" "}
                         <input
                           type="search"
                           placeholder="'-' 을 포함한 중개등록번호 전체"
@@ -512,27 +455,20 @@ const SignUpModal: React.FC<SignUpModalProps> = ({
                           onChange={(e) => setSearchQuery(e.target.value)}
                           disabled={!!selectedAgent}
                         />
-                                                           {" "}
                         <span className="bg-gray-100 text-gray-400 p-3 rounded-lg flex-shrink-0">
-                                                                 {" "}
                           <Search size={20} />                                 
                            {" "}
                         </span>
-                                                     {" "}
                       </div>
-                                                 {" "}
                     </div>
-                                                                            {" "}
                     {isSearching && (
                       <div className="flex justify-center py-4">
                         <Spinner />
                       </div>
                     )}
-                                                {/* 검색 결과 리스트 */}       
-                                       {" "}
+                    {/* 검색 결과 리스트 */}       
                     {searchResults.length > 0 && (
                       <ul className="border rounded-lg max-h-40 overflow-y-auto">
-                                                           {" "}
                         {searchResults.map(
                           (
                             agent, // [수정 3] React 경고를 없애기 위해 key prop 추가
@@ -542,39 +478,33 @@ const SignUpModal: React.FC<SignUpModalProps> = ({
                               onClick={() => handleSelectAgent(agent)}
                               className="p-3 hover:bg-harubang-sky/50 cursor-pointer border-b last:border-b-0"
                             >
-                                                                         {" "}
                               <p className="font-semibold">
                                 {agent.medOfficeNm}
                               </p>
-                                                                         {" "}
                               <p className="text-sm text-gray-500">
                                 {agent.lctnRoadNmAddr} | 대표: {agent.rprsvNm}
                               </p>
-                                                             {" "}
                             </li>
                           ),
                         )}
-                                                       {" "}
                       </ul>
                     )}
-                                                {/* 선택된 중개사 정보 */}     
-                                         {" "}
+                    {/* 선택된 중개사 정보 */}
                     {selectedAgent && (
                       <motion.div
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         className="p-4 bg-green-50 border border-green-200 rounded-lg"
                       >
-                                                           
                         <p className="font-bold text-green-800">
                           {selectedAgent.medOfficeNm} | 대표:{" "}
                           {selectedAgent.rprsvNm}
                         </p>
-                                                     {" "}
+
                         <p className="text-sm text-green-700">
                           {selectedAgent.lctnRoadNmAddr}
                         </p>
-                                                           {" "}
+
                         <button
                           onClick={() => {
                             setSelectedAgent(null);
@@ -590,27 +520,21 @@ const SignUpModal: React.FC<SignUpModalProps> = ({
                         >
                           다시 검색
                         </button>
-                                                       {" "}
                       </motion.div>
                     )}
-                                               {" "}
-                    {/* 2단계, 3단계 폼 (selectedAgent가 있을 때만 보임) */}   
-                                           {" "}
+                    {/* 2단계, 3단계 폼 (selectedAgent가 있을 때만 보임) */}
                     {selectedAgent && (
                       <motion.div
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         className="space-y-4"
                       >
-                                                           {" "}
                         <h3 className="font-semibold text-gray-800 border-b pb-2 pt-4">
                           2. 대표자 본인인증
                         </h3>
-                                                           {" "}
+
                         <div>
-                                                                 {" "}
-                          <label className={labelStyle}>대표자명</label>       
-                                                         {" "}
+                          <label className={labelStyle}>대표자명</label>
                           <input
                             type="text"
                             value={name}
@@ -618,15 +542,11 @@ const SignUpModal: React.FC<SignUpModalProps> = ({
                             className={`${inputStyle} bg-gray-100 cursor-not-allowed`}
                             readOnly
                           />
-                                                             {" "}
                         </div>
-                                                           {" "}
+
                         <div>
-                                                                 {" "}
-                          <label className={labelStyle}>휴대폰 번호</label>     
-                                                           {" "}
+                          <label className={labelStyle}>휴대폰 번호</label>
                           <div className="flex gap-2">
-                                                                       {" "}
                             <input
                               type="tel"
                               placeholder="'-' 없이 숫자만 입력"
@@ -636,35 +556,24 @@ const SignUpModal: React.FC<SignUpModalProps> = ({
                               onChange={(e) => setPhone(e.target.value)}
                               disabled={isVerified}
                             />
-                                                                       {" "}
                             <button
                               type="button"
                               onClick={handleRequestAuthCode}
                               disabled={isCodeSent || isVerified}
                               className="bg-gray-200 text-gray-700 font-semibold px-4 rounded-lg text-sm flex-shrink-0 hover:bg-gray-300 disabled:bg-gray-100 disabled:text-gray-400"
                             >
-                                                                 {" "}
-                              {isVerified ? "인증완료" : "인증요청"}           
-                                                             {" "}
-                              {/* [오류 수정 1] 446라인의 잘못된 텍스트 삭제 */}
-                                                                         {" "}
+                              {isVerified ? "인증완료" : "인증요청"}
                             </button>
-                                                                   {" "}
                           </div>
-                                                             {" "}
                         </div>
-                                                           {" "}
                         {isCodeSent && (
                           <motion.div
                             initial={{ opacity: 0, height: 0 }}
                             animate={{ opacity: 1, height: "auto" }}
                             className="space-y-2"
                           >
-                                                                       {" "}
-                            <label className={labelStyle}>인증번호</label>     
-                                                                 {" "}
+                            <label className={labelStyle}>인증번호</label>
                             <div className="flex gap-2 relative">
-                                                                             {" "}
                               <input
                                 type="text"
                                 placeholder="인증번호 6자리 입력"
@@ -673,9 +582,7 @@ const SignUpModal: React.FC<SignUpModalProps> = ({
                                 value={authCode}
                                 onChange={(e) => setAuthCode(e.target.value)}
                               />
-                                                                             {" "}
                               <span className="absolute right-28 top-1/2 -translate-y-1/2 text-sm text-red-500">{`${Math.floor(timer / 60)}:${(timer % 60).toString().padStart(2, "0")}`}</span>
-                                                                             {" "}
                               <button
                                 type="button"
                                 onClick={handleConfirmAuthCode}
@@ -683,20 +590,14 @@ const SignUpModal: React.FC<SignUpModalProps> = ({
                               >
                                 확인
                               </button>
-                                                                         {" "}
                             </div>
-                                                                   {" "}
                           </motion.div>
                         )}
-                                                           {" "}
                         <h3 className="font-semibold text-gray-800 border-b pb-2 pt-4">
                           3. 계정 정보 생성
                         </h3>
-                                                           {" "}
                         <div>
-                                                                 {" "}
-                          <label className={labelStyle}>이메일 (아이디)</label> 
-                                                   {" "}
+                          <label className={labelStyle}>이메일 (아이디)</label>
                           <input
                             type="email"
                             placeholder="사용하실 이메일 주소를 입력하세요"
@@ -705,13 +606,9 @@ const SignUpModal: React.FC<SignUpModalProps> = ({
                             value={email}
                             onChange={(e) => setEmail(e.target.value)}
                           />
-                                                     {" "}
                         </div>
-                                                           {" "}
                         <div>
-                                                                 {" "}
-                          <label className={labelStyle}>비밀번호</label>       
-                                                         {" "}
+                          <label className={labelStyle}>비밀번호</label>
                           <input
                             type="password"
                             placeholder="8자 이상, 영문/숫자/특수문자 조합"
@@ -720,19 +617,14 @@ const SignUpModal: React.FC<SignUpModalProps> = ({
                             value={password}
                             onChange={handlePasswordChange}
                           />
-                                                       {" "}
                           {passwordError && (
                             <p className="text-red-500 text-xs mt-1">
                               {passwordError}
                             </p>
                           )}
-                                                             {" "}
                         </div>
-                                                           {" "}
                         <div>
-                                                                 {" "}
-                          <label className={labelStyle}>비밀번호 확인</label>   
-                                                             {" "}
+                          <label className={labelStyle}>비밀번호 확인</label>
                           <input
                             type="password"
                             placeholder="비밀번호를 다시 한번 입력하세요"
@@ -741,48 +633,36 @@ const SignUpModal: React.FC<SignUpModalProps> = ({
                             value={passwordConfirm}
                             onChange={handlePasswordConfirmChange}
                           />
-                                                                 {" "}
                           {passwordConfirmError && (
                             <p className="text-red-500 text-xs mt-1">
                               {passwordConfirmError}
                             </p>
                           )}
-                                                             {" "}
                         </div>
-                                                       {" "}
                       </motion.div>
                     )}
-                                           
                   </div>
                 )}
-                                 {" "}
-                {/* [오류 수정 2] 492라인의 불필요한 '}' 삭제 */}           
-                 {" "}
               </div>
-                            {/* 하단 버튼 영역 */}             {" "}
+              {/* 하단 버튼 영역 */}
               <div className="p-8 pt-6 mt-auto border-t">
-                               {" "}
                 {formError && (
                   <div className="text-red-500 text-sm text-center mb-4">
-                                      {formError}                   {" "}
+                    {formError}
                   </div>
                 )}
-                               {" "}
                 <div>
-                                     {" "}
                   <label className="flex items-center gap-2 text-xs text-gray-500">
                     <input
                       type="checkbox"
                       required
                       className="rounded border-gray-300 text-harubang-blue focus:ring-harubang-blue"
-                    />{" "}
+                    />
                     <span>
                       (필수) 서비스 이용약관 및 개인정보처리방침에 동의합니다.
                     </span>
                   </label>
-                                 {" "}
                 </div>
-                               {" "}
                 <div>
                   <button
                     type="submit"
@@ -792,16 +672,11 @@ const SignUpModal: React.FC<SignUpModalProps> = ({
                     가입하기
                   </button>
                 </div>
-                             {" "}
               </div>
-                         {" "}
             </form>
-                                 {" "}
           </motion.div>
-                 {" "}
         </div>
       )}
-         {" "}
     </AnimatePresence>
   );
 };
