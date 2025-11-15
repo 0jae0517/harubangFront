@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
@@ -11,42 +11,76 @@ import {
   Bath,
   Home,
 } from "lucide-react";
+import apiClient from "../../api/apiClient";
 
-// 임시 매물 데이터 (더 상세한 정보 포함)
-const mockProperties = [
-  {
-    id: 101,
-    name: "역삼동 래미안 아파트 101동 502호",
-    type: "아파트",
-    deal: "전세",
-    price: "5억",
-    area: "84㎡",
-    rooms: "3개",
-    baths: "2개",
-  },
-  {
-    id: 102,
-    name: "수원시 영통구 광교자이 오피스텔",
-    type: "오피스텔",
-    deal: "월세",
-    price: "2000만 / 80만",
-    area: "52㎡",
-    rooms: "2개",
-    baths: "1개",
-  },
-  {
-    id: 103,
-    name: "연남동 신축 빌라 301호",
-    type: "빌라",
-    deal: "매매",
-    price: "12억",
-    area: "110㎡",
-    rooms: "4개",
-    baths: "2개",
-  },
-];
+interface Property {
+  id: number;
+  name: string;
+  address: string;
+  propertyType: string;
+  transactionType: string;
+  price: string;
+  deposit: string;
+  monthlyRent: string;
+  area: string;
+  rooms: number;
+  baths: number;
+  floor: string;
+  description: string;
+}
 
 const AgentPropertiesPage: React.FC = () => {
+  const [properties, setProperties] = useState<Property[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchMyProperties();
+  }, []);
+
+  const fetchMyProperties = async () => {
+    try {
+      console.log("📥 매물 목록 조회 중...");
+      const response = await apiClient.get("/properties/my");
+      console.log("✅ 매물 목록:", response.data);
+      setProperties(response.data);
+    } catch (error: any) {
+      console.error("❌ 매물 목록 조회 실패:", error);
+      alert(error.message || "매물 목록을 불러오는데 실패했습니다.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDelete = async (propertyId: number, propertyName: string) => {
+    if (!confirm(`정말 "${propertyName}" 매물을 삭제하시겠습니까?`)) {
+      return;
+    }
+
+    try {
+      await apiClient.delete(`/properties/${propertyId}`);
+      alert("매물이 삭제되었습니다.");
+      fetchMyProperties();
+    } catch (error: any) {
+      console.error("❌ 매물 삭제 실패:", error);
+      alert(error.message || "매물 삭제에 실패했습니다.");
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="bg-harubang-sky min-h-full py-12">
+        <div className="container mx-auto px-6">
+          <div className="flex justify-center items-center h-64">
+            <div className="text-center">
+              <div className="w-12 h-12 border-4 border-harubang-blue border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+              <p className="text-gray-600">매물 목록을 불러오는 중...</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="bg-harubang-sky min-h-full py-12">
       <div className="container mx-auto px-6">
@@ -72,8 +106,8 @@ const AgentPropertiesPage: React.FC = () => {
 
         <div className="bg-white rounded-xl shadow-md overflow-hidden">
           <ul className="divide-y divide-gray-200">
-            {mockProperties.length > 0 ? (
-              mockProperties.map((prop, index) => (
+            {properties.length > 0 ? (
+              properties.map((prop, index) => (
                 <motion.li
                   key={prop.id}
                   initial={{ opacity: 0, y: 20 }}
@@ -86,29 +120,39 @@ const AgentPropertiesPage: React.FC = () => {
                       <p className="font-bold text-lg text-harubang-ink">
                         {prop.name}
                       </p>
+                      <p className="text-sm text-gray-500 mt-1">
+                        {prop.address}
+                      </p>
                       <div className="flex items-center flex-wrap gap-x-4 gap-y-2 text-sm text-harubang-ink-light mt-2">
                         <span className="flex items-center gap-1.5">
-                          <Building size={14} /> {prop.type}
+                          <Building size={14} /> {prop.propertyType}
                         </span>
                         <span className="flex items-center gap-1.5">
-                          <Banknote size={14} /> {prop.deal} | {prop.price}
+                          <Banknote size={14} /> {prop.transactionType} |{" "}
+                          {prop.price}
                         </span>
                         <span className="flex items-center gap-1.5">
                           <Square size={14} /> {prop.area}
                         </span>
                         <span className="flex items-center gap-1.5">
-                          <Home size={14} /> 방 {prop.rooms}
+                          <Home size={14} /> 방 {prop.rooms}개
                         </span>
                         <span className="flex items-center gap-1.5">
-                          <Bath size={14} /> 욕실 {prop.baths}
+                          <Bath size={14} /> 욕실 {prop.baths}개
                         </span>
                       </div>
                     </div>
                     <div className="mt-4 md:mt-0 md:ml-6 flex-shrink-0 flex items-center gap-3">
-                      <button className="flex items-center gap-2 text-sm text-gray-600 hover:text-harubang-blue">
+                      <button 
+                        className="flex items-center gap-2 text-sm text-gray-600 hover:text-harubang-blue"
+                        onClick={() => alert("수정 기능은 추후 구현 예정입니다.")}
+                      >
                         <Edit size={16} /> 수정
                       </button>
-                      <button className="flex items-center gap-2 text-sm text-red-500 hover:text-red-700">
+                      <button 
+                        className="flex items-center gap-2 text-sm text-red-500 hover:text-red-700"
+                        onClick={() => handleDelete(prop.id, prop.name)}
+                      >
                         <Trash2 size={16} /> 삭제
                       </button>
                     </div>
@@ -117,8 +161,8 @@ const AgentPropertiesPage: React.FC = () => {
               ))
             ) : (
               <div className="p-12 text-center text-gray-500">
-                <p>등록된 매물이 없습니다.</p>
-                <p className="mt-2 text-sm">
+                <p className="text-lg font-semibold mb-2">등록된 매물이 없습니다.</p>
+                <p className="text-sm">
                   오른쪽 상단의 '새 매물 등록하기' 버튼을 눌러 첫 매물을
                   등록해보세요.
                 </p>

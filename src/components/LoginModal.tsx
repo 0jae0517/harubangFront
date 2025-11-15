@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import harubangLogo from "../assets/logo.png";
-import axios from "axios";
+import apiClient from "../api/apiClient";
 
 interface LoginModalProps {
   isOpen: boolean;
@@ -10,10 +10,6 @@ interface LoginModalProps {
   onLoginSuccess: (role: "customer" | "agent" | "admin") => void;
   onSignUpModalOpen: () => void;
 }
-
-// 백엔드 API 기본 URL (src/.env 파일에서 읽어옴)
-const API_BASE_URL =
-  import.meta.env.VITE_API_BASE_URL || "http://localhost:8080";
 
 const LoginModal: React.FC<LoginModalProps> = ({
   isOpen,
@@ -29,30 +25,37 @@ const LoginModal: React.FC<LoginModalProps> = ({
 
   const handleLoginSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError(""); // 에러 초기화
+    setError("");
+
+    console.log("🔵 로그인 시도:", { email, userType });
 
     try {
-      // 백엔드에 로그인 요청 (/api/auth/login)
-      const response = await axios.post(`${API_BASE_URL}/api/auth/login`, {
+      console.log("🔵 API 호출 중...");
+      
+      const response = await apiClient.post("/auth/login", {
         email: email,
         password: password,
       });
 
-      // 로그인 성공 시 (response.data.data에서 데이터 가져오기)
-      const { accessToken, userRole, userName } = response.data.data;
+      console.log("✅ 로그인 성공! 응답:", response);
+      console.log("✅ 응답 데이터:", response.data);
 
-      // JWT 토큰을 브라우저 저장소(localStorage)에 저장
+      const { accessToken, userRole, userName } = response.data;
+
+      console.log("✅ 파싱된 데이터:", { accessToken, userRole, userName });
+
       localStorage.setItem("accessToken", accessToken);
       localStorage.setItem("userName", userName);
       localStorage.setItem("userRole", userRole);
 
-      // userRole을 소문자로 변환하여 전달
       if (
         userRole === "CUSTOMER" ||
         userRole === "AGENT" ||
         userRole === "ADMIN"
       ) {
         const normalizedRole = userRole.toLowerCase() as "customer" | "agent" | "admin";
+        console.log("✅ 정규화된 역할:", normalizedRole);
+        
         onLoginSuccess(normalizedRole);
         
         if (userRole === "ADMIN") {
@@ -62,14 +65,19 @@ const LoginModal: React.FC<LoginModalProps> = ({
         setError("알 수 없는 사용자 역할입니다.");
       }
     } catch (err: any) {
-      // 로그인 실패 시
-      if (axios.isAxiosError(err) && err.response) {
-        // 백엔드에서 보낸 에러 메시지 표시
-        setError(err.response.data.message || "로그인에 실패했습니다.");
+      console.error("❌ 로그인 에러 발생:", err);
+      console.error("❌ 에러 메시지:", err.message);
+      
+      // 에러 메시지 표시
+      if (err.message) {
+        setError(err.message);
+      } else if (err.response?.data?.message) {
+        setError(err.response.data.message);
+      } else if (err.response?.status) {
+        setError(`로그인 실패 (에러 코드: ${err.response.status})`);
       } else {
         setError("로그인 중 오류가 발생했습니다.");
       }
-      console.error("Login error:", err);
     }
   };
 
@@ -105,7 +113,6 @@ const LoginModal: React.FC<LoginModalProps> = ({
             exit={{ opacity: 0, scale: 0.95 }}
             className="relative w-full max-w-md bg-white rounded-2xl shadow-xl z-10 overflow-hidden p-10"
           >
-            {/* 닫기 버튼 */}
             <button
               onClick={onClose}
               className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition-colors z-20"
@@ -127,7 +134,6 @@ const LoginModal: React.FC<LoginModalProps> = ({
               </svg>
             </button>
 
-            {/* 로고 */}
             <div className="text-center mb-8">
               <img
                 src={harubangLogo}
@@ -136,7 +142,6 @@ const LoginModal: React.FC<LoginModalProps> = ({
               />
             </div>
 
-            {/* 탭 (고객/중개사) */}
             <div className="flex mb-6">
               <button
                 onClick={() => setUserType("customer")}
@@ -152,7 +157,6 @@ const LoginModal: React.FC<LoginModalProps> = ({
               </button>
             </div>
 
-            {/* 로그인 폼 */}
             <form className="space-y-4" onSubmit={handleLoginSubmit}>
               <div>
                 <input
@@ -175,9 +179,10 @@ const LoginModal: React.FC<LoginModalProps> = ({
                 />
               </div>
 
-              {/* 에러 메시지 표시 */}
               {error && (
-                <div className="text-red-500 text-sm text-center">{error}</div>
+                <div className="text-red-500 text-sm text-center bg-red-50 p-3 rounded-lg">
+                  {error}
+                </div>
               )}
 
               <div className="flex items-center justify-between text-sm">
@@ -206,7 +211,6 @@ const LoginModal: React.FC<LoginModalProps> = ({
               </div>
             </form>
 
-            {/* 회원가입 링크 */}
             <div className="text-center mt-6 text-sm">
               <span className="text-gray-500">회원이 아니신가요? </span>
               <button

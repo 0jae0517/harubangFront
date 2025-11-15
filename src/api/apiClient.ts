@@ -13,7 +13,7 @@ apiClient.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem("accessToken");
 
-    // ⭐ 로그인/회원가입 요청에는 토큰을 보내지 않음
+    // 로그인/회원가입 요청에는 토큰을 보내지 않음
     const isAuthRequest =
       config.url?.includes("/auth/login") ||
       config.url?.includes("/auth/signup");

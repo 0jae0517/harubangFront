@@ -1,23 +1,65 @@
-import React from "react";
-import { Link } from "react-router-dom";
+import React, { useState } from "react";
+import { useNavigate, Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
   Building,
   Banknote,
   Text,
-  Camera,
   Save,
   ArrowLeft,
   Square,
   Bath,
   Home,
 } from "lucide-react";
+import apiClient from "../../api/apiClient";
 
 const AddPropertyPage: React.FC = () => {
-  const handleSubmit = (e: React.FormEvent) => {
+  const navigate = useNavigate();
+  
+  const [formData, setFormData] = useState({
+    propertyType: "아파트",
+    transactionType: "전세",
+    address: "",
+    deposit: "",
+    rent: "",
+    area: "",
+    rooms: 0,
+    baths: 0,
+    floor: "",
+    description: "",
+  });
+
+  const [loading, setLoading] = useState(false);
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    alert("새로운 매물이 성공적으로 등록되었습니다.");
-    // 등록 후 매물 목록 페이지로 이동하는 로직 필요
+    setLoading(true);
+    
+    try {
+      console.log("📤 매물 등록 요청:", formData);
+      
+      const response = await apiClient.post("/properties", formData);
+      
+      console.log("✅ 매물 등록 성공:", response.data);
+      
+      alert("새로운 매물이 성공적으로 등록되었습니다.");
+      navigate("/agent/properties");
+    } catch (error: any) {
+      console.error("❌ 매물 등록 실패:", error);
+      alert(error.message || "매물 등록에 실패했습니다.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
+  ) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({
+      ...prev,
+      [name]: name === "rooms" || name === "baths" ? parseInt(value) || 0 : value,
+    }));
   };
 
   const inputStyle =
@@ -52,7 +94,6 @@ const AddPropertyPage: React.FC = () => {
           transition={{ delay: 0.2 }}
           className="mt-8 bg-white rounded-xl shadow-md p-8 space-y-8"
         >
-          {/* 매물 기본 정보 */}
           <div className="border-b pb-8">
             <h2 className={sectionTitleStyle}>
               <Building size={22} /> 기본 정보
@@ -60,7 +101,12 @@ const AddPropertyPage: React.FC = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
                 <label className={labelStyle}>매물 종류</label>
-                <select className={inputStyle}>
+                <select
+                  name="propertyType"
+                  value={formData.propertyType}
+                  onChange={handleChange}
+                  className={inputStyle}
+                >
                   <option>아파트</option>
                   <option>오피스텔</option>
                   <option>빌라</option>
@@ -69,7 +115,12 @@ const AddPropertyPage: React.FC = () => {
               </div>
               <div>
                 <label className={labelStyle}>거래 종류</label>
-                <select className={inputStyle}>
+                <select
+                  name="transactionType"
+                  value={formData.transactionType}
+                  onChange={handleChange}
+                  className={inputStyle}
+                >
                   <option>전세</option>
                   <option>월세</option>
                   <option>매매</option>
@@ -80,6 +131,9 @@ const AddPropertyPage: React.FC = () => {
               <label className={labelStyle}>주소</label>
               <input
                 type="text"
+                name="address"
+                value={formData.address}
+                onChange={handleChange}
                 placeholder="예) 서울특별시 강남구 역삼동 123-45 래미안아파트 101동 502호"
                 required
                 className={inputStyle}
@@ -87,17 +141,21 @@ const AddPropertyPage: React.FC = () => {
             </div>
           </div>
 
-          {/* 가격 정보 */}
           <div className="border-b pb-8">
             <h2 className={sectionTitleStyle}>
               <Banknote size={22} /> 가격 정보
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
-                <label className={labelStyle}>보증금 / 매매가</label>
+                <label className={labelStyle}>
+                  {formData.transactionType === "매매" ? "매매가" : "보증금"}
+                </label>
                 <div className="relative">
                   <input
-                    type="number"
+                    type="text"
+                    name="deposit"
+                    value={formData.deposit}
+                    onChange={handleChange}
                     placeholder="5000"
                     required
                     className={inputStyle}
@@ -107,32 +165,27 @@ const AddPropertyPage: React.FC = () => {
                   </span>
                 </div>
               </div>
-              <div>
-                <label className={labelStyle}>월세 (월세인 경우)</label>
-                <div className="relative">
-                  <input
-                    type="number"
-                    placeholder="80"
-                    className={inputStyle}
-                  />
-                  <span className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500">
-                    만원
-                  </span>
+              {formData.transactionType === "월세" && (
+                <div>
+                  <label className={labelStyle}>월세</label>
+                  <div className="relative">
+                    <input
+                      type="text"
+                      name="rent"
+                      value={formData.rent}
+                      onChange={handleChange}
+                      placeholder="80"
+                      className={inputStyle}
+                    />
+                    <span className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500">
+                      만원
+                    </span>
+                  </div>
                 </div>
-              </div>
-            </div>
-            <div className="mt-6">
-              <label className={labelStyle}>관리비 (선택)</label>
-              <div className="relative">
-                <input type="number" placeholder="10" className={inputStyle} />
-                <span className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500">
-                  만원
-                </span>
-              </div>
+              )}
             </div>
           </div>
 
-          {/* 매물 상세 정보 */}
           <div className="border-b pb-8">
             <h2 className={sectionTitleStyle}>
               <Home size={22} /> 매물 상세
@@ -142,7 +195,10 @@ const AddPropertyPage: React.FC = () => {
                 <label className={labelStyle}>전용 면적</label>
                 <div className="relative">
                   <input
-                    type="number"
+                    type="text"
+                    name="area"
+                    value={formData.area}
+                    onChange={handleChange}
                     placeholder="84"
                     required
                     className={inputStyle}
@@ -156,8 +212,12 @@ const AddPropertyPage: React.FC = () => {
                 <label className={labelStyle}>방 개수</label>
                 <input
                   type="number"
+                  name="rooms"
+                  value={formData.rooms}
+                  onChange={handleChange}
                   placeholder="3"
                   required
+                  min="0"
                   className={inputStyle}
                 />
               </div>
@@ -165,8 +225,12 @@ const AddPropertyPage: React.FC = () => {
                 <label className={labelStyle}>욕실 개수</label>
                 <input
                   type="number"
+                  name="baths"
+                  value={formData.baths}
+                  onChange={handleChange}
                   placeholder="2"
                   required
+                  min="0"
                   className={inputStyle}
                 />
               </div>
@@ -174,6 +238,9 @@ const AddPropertyPage: React.FC = () => {
                 <label className={labelStyle}>해당 층</label>
                 <input
                   type="text"
+                  name="floor"
+                  value={formData.floor}
+                  onChange={handleChange}
                   placeholder="5"
                   required
                   className={inputStyle}
@@ -182,33 +249,19 @@ const AddPropertyPage: React.FC = () => {
             </div>
           </div>
 
-          {/* 상세 설명 */}
           <div className="border-b pb-8">
             <h2 className={sectionTitleStyle}>
               <Text size={22} /> 상세 설명
             </h2>
             <textarea
+              name="description"
+              value={formData.description}
+              onChange={handleChange}
               rows={6}
               placeholder="매물의 특징과 장점을 자세하게 설명해주세요. (예: 역세권, 남향, 시스템에어컨 완비, 리모델링 완료 등)"
+              required
               className={inputStyle}
             ></textarea>
-          </div>
-
-          {/* 사진 첨부 */}
-          <div>
-            <h2 className={sectionTitleStyle}>
-              <Camera size={22} /> 사진 첨부
-            </h2>
-            <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center bg-gray-50 hover:bg-gray-100 cursor-pointer">
-              <Camera size={48} className="mx-auto text-gray-400" />
-              <p className="mt-2 text-sm text-gray-600">
-                여기에 사진 파일을 드래그하거나 클릭하여 업로드하세요.
-              </p>
-              <p className="text-xs text-gray-500 mt-1">
-                최대 10장까지 등록 가능합니다.
-              </p>
-              <input type="file" className="hidden" multiple accept="image/*" />
-            </div>
           </div>
 
           <div className="flex justify-end gap-4 pt-4">
@@ -220,9 +273,19 @@ const AddPropertyPage: React.FC = () => {
             </Link>
             <button
               type="submit"
-              className="px-6 py-3 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-harubang-blue hover:bg-harubang-blue-dark flex items-center gap-2"
+              disabled={loading}
+              className="px-6 py-3 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-harubang-blue hover:bg-harubang-blue-dark flex items-center gap-2 disabled:bg-gray-400 disabled:cursor-not-allowed"
             >
-              <Save size={16} /> 매물 저장하기
+              {loading ? (
+                <>
+                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                  저장 중...
+                </>
+              ) : (
+                <>
+                  <Save size={16} /> 매물 저장하기
+                </>
+              )}
             </button>
           </div>
         </motion.form>
