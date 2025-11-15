@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import harubangLogo from "../assets/logo.png";
-import axios from "axios"; // [추가] axios import
+import axios from "axios";
 
 interface LoginModalProps {
   isOpen: boolean;
@@ -11,7 +11,7 @@ interface LoginModalProps {
   onSignUpModalOpen: () => void;
 }
 
-// [추가] 백엔드 API 기본 URL (src/.env 파일에서 읽어옴)
+// 백엔드 API 기본 URL (src/.env 파일에서 읽어옴)
 const API_BASE_URL =
   import.meta.env.VITE_API_BASE_URL || "http://localhost:8080";
 
@@ -24,38 +24,37 @@ const LoginModal: React.FC<LoginModalProps> = ({
   const [userType, setUserType] = useState<"customer" | "agent">("customer");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [error, setError] = useState(""); // [추가] 에러 메시지 상태
+  const [error, setError] = useState("");
   const navigate = useNavigate();
 
   const handleLoginSubmit = async (e: React.FormEvent) => {
-    // [수정] async 추가
     e.preventDefault();
     setError(""); // 에러 초기화
 
     try {
-      // [추가] 백엔드에 로그인 요청 (/api/auth/login)
+      // 백엔드에 로그인 요청 (/api/auth/login)
       const response = await axios.post(`${API_BASE_URL}/api/auth/login`, {
         email: email,
         password: password,
       });
 
-      // [추가] 로그인 성공 시
-      const { accessToken, userRole, userName } = response.data;
+      // 로그인 성공 시 (response.data.data에서 데이터 가져오기)
+      const { accessToken, userRole, userName } = response.data.data;
 
-      // [추가] JWT 토큰을 브라우저 저장소(localStorage)에 저장
-      // (프론트엔드에서 API 호출 시마다 이 토큰을 사용함)
+      // JWT 토큰을 브라우저 저장소(localStorage)에 저장
       localStorage.setItem("accessToken", accessToken);
       localStorage.setItem("userName", userName);
       localStorage.setItem("userRole", userRole);
 
-      // [수정] App.tsx의 상태 업데이트 (로그인 성공 처리)
-      // userRole이 "CUSTOMER" 또는 "AGENT"인지 확인
+      // userRole을 소문자로 변환하여 전달
       if (
         userRole === "CUSTOMER" ||
         userRole === "AGENT" ||
         userRole === "ADMIN"
       ) {
-        onLoginSuccess(userRole);
+        const normalizedRole = userRole.toLowerCase() as "customer" | "agent" | "admin";
+        onLoginSuccess(normalizedRole);
+        
         if (userRole === "ADMIN") {
           navigate("/admin/dashboard");
         }
@@ -63,10 +62,10 @@ const LoginModal: React.FC<LoginModalProps> = ({
         setError("알 수 없는 사용자 역할입니다.");
       }
     } catch (err: any) {
-      // [추가] 로그인 실패 시
+      // 로그인 실패 시
       if (axios.isAxiosError(err) && err.response) {
         // 백엔드에서 보낸 에러 메시지 표시
-        setError(err.response.data || "로그인에 실패했습니다.");
+        setError(err.response.data.message || "로그인에 실패했습니다.");
       } else {
         setError("로그인 중 오류가 발생했습니다.");
       }
@@ -80,7 +79,7 @@ const LoginModal: React.FC<LoginModalProps> = ({
   };
 
   const getTabClassName = (type: "customer" | "agent") => {
-      const baseClasses =
+    const baseClasses =
       "w-1/2 py-3 text-center text-lg font-bold focus:outline-none transition-colors duration-300";
     if (userType === type) {
       return `${baseClasses} text-harubang-blue border-b-2 border-harubang-blue`;
@@ -106,7 +105,7 @@ const LoginModal: React.FC<LoginModalProps> = ({
             exit={{ opacity: 0, scale: 0.95 }}
             className="relative w-full max-w-md bg-white rounded-2xl shadow-xl z-10 overflow-hidden p-10"
           >
-            {/* ... (닫기 버튼, 로고 등은 변경 없음) ... */}
+            {/* 닫기 버튼 */}
             <button
               onClick={onClose}
               className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition-colors z-20"
@@ -127,6 +126,8 @@ const LoginModal: React.FC<LoginModalProps> = ({
                 <line x1="6" y1="6" x2="18" y2="18"></line>
               </svg>
             </button>
+
+            {/* 로고 */}
             <div className="text-center mb-8">
               <img
                 src={harubangLogo}
@@ -135,6 +136,7 @@ const LoginModal: React.FC<LoginModalProps> = ({
               />
             </div>
 
+            {/* 탭 (고객/중개사) */}
             <div className="flex mb-6">
               <button
                 onClick={() => setUserType("customer")}
@@ -150,6 +152,7 @@ const LoginModal: React.FC<LoginModalProps> = ({
               </button>
             </div>
 
+            {/* 로그인 폼 */}
             <form className="space-y-4" onSubmit={handleLoginSubmit}>
               <div>
                 <input
@@ -172,14 +175,27 @@ const LoginModal: React.FC<LoginModalProps> = ({
                 />
               </div>
 
-              {/* [추가] 에러 메시지 표시 */}
+              {/* 에러 메시지 표시 */}
               {error && (
                 <div className="text-red-500 text-sm text-center">{error}</div>
               )}
 
               <div className="flex items-center justify-between text-sm">
-                {/* ... (이메일 저장, 비밀번호 찾기 등은 변경 없음) ... */}
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    className="rounded border-gray-300 text-harubang-blue focus:ring-harubang-blue"
+                  />
+                  <span className="text-gray-600">이메일 저장</span>
+                </label>
+                <a
+                  href="/forgot-password"
+                  className="text-harubang-blue hover:underline"
+                >
+                  비밀번호 찾기
+                </a>
               </div>
+
               <div>
                 <button
                   type="submit"
@@ -190,6 +206,7 @@ const LoginModal: React.FC<LoginModalProps> = ({
               </div>
             </form>
 
+            {/* 회원가입 링크 */}
             <div className="text-center mt-6 text-sm">
               <span className="text-gray-500">회원이 아니신가요? </span>
               <button

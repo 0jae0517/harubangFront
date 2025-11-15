@@ -1,58 +1,130 @@
-import axios from 'axios';
+import axios from "axios";
 
 // 1. Axios 인스턴스 생성
 const apiClient = axios.create({
-  // 2. Vite 프록시 설정과 일치하도록 baseURL 설정
-  // (이제 apiClient.get('/login')은 '/api/login'으로 요청됩니다)
-  baseURL: '/api',
+  baseURL: "/api",
+  headers: {
+    "Content-Type": "application/json",
+  },
 });
 
-// 3. "요청" 인터셉터 (Request Interceptor)
-//    모든 API 요청이 서버로 전송되기 전에 이 코드를 거칩니다.
+// 2. Request Interceptor (요청 전)
 apiClient.interceptors.request.use(
   (config) => {
-    // 4. localStorage에서 'accessToken'을 가져옵니다.
-    const token = localStorage.getItem('accessToken');
+    const token = localStorage.getItem("accessToken");
 
-    // 5. 토큰이 존재하면, 모든 요청 헤더(headers)에
-    //    Authorization: 'Bearer <토큰값>' 형식으로 토큰을 추가합니다.
-    if (token) {
+    // ⭐ 로그인/회원가입 요청에는 토큰을 보내지 않음
+    const isAuthRequest =
+      config.url?.includes("/auth/login") ||
+      config.url?.includes("/auth/signup");
+
+    if (token && !isAuthRequest) {
       config.headers.Authorization = `Bearer ${token}`;
     }
+
     return config;
   },
   (error) => {
-    // 요청 에러 처리
     return Promise.reject(error);
   }
 );
 
-// 4. "응답" 인터셉터 (Response Interceptor)
-//    서버로부터 응답을 받은 직후에 이 코드를 거칩니다.
+// 3. Response Interceptor (응답 후)
 apiClient.interceptors.response.use(
   (response) => {
-    // 2xx 범위의 상태 코드일 때:
-    // 응답 데이터를 그대로 반환합니다.
+    // 성공 응답 (2xx)
+
+    // ApiResponse 구조 체크
+    if (
+      response.data &&
+      typeof response.data === "object" &&
+      "success" in response.data
+    ) {
+      // success가 false인 경우
+      if (response.data.success === false) {
+        const error = new Error(
+          response.data.message || "요청 처리에 실패했습니다."
+        );
+        return Promise.reject(error);
+      }
+
+      // success가 true인 경우 - data 필드만 추출
+      return {
+        ...response,
+        data: response.data.data,
+      };
+    }
+
+    // ApiResponse 구조가 아닌 경우 그대로 반환
     return response;
   },
   (error) => {
-    // 2xx 외의 상태 코드일 때 (예: 401, 404, 500 등):
+    // 에러 응답 (4xx, 5xx)
+
+    console.error("API Error:", error);
+
+    // 응답이 있는 경우
     if (error.response) {
-      // 401 (Unauthorized) 에러가 발생한 경우 (예: 토큰 만료)
-      if (error.response.status === 401) {
-        console.error('인증되지 않은 접근입니다. 로그아웃 처리됩니다.');
-        
-        // 1. 기존 토큰을 삭제합니다.
-        localStorage.removeItem('accessToken');
-        
-        // 2. 로그인 페이지 (홈)로 리디렉션합니다.
-        //    (location.href를 사용하면 App.tsx의 상태와 관계없이 즉시 이동)
-        location.href = '/'; 
-        
-        // (필요하다면: "로그인이 만료되었습니다." 알림창 표시)
-        // alert('로그인이 만료되었습니다. 다시 로그인해주세요.');
+      const status = error.response.status;
+      const data = error.response.data;
+
+      // 401 Unauthorized (인증 실패)
+      if (status === 401) {
+        console.error("인증되지 않은 접근입니다.");
+        localStorage.removeItem("accessToken");
+        localStorage.removeItem("userName");
+        localStorage.removeItem("userRole");
+
+        // 로그인 페이지가 아닌 경우에만 리다이렉트
+        if (!window.location.pathname.includes("/login")) {
+          window.location.href = "/";
+        }
       }
+
+      // 403 Forbidden (권한 없음)
+      if (status === 403) {
+        console.error("접근 권한이 없습니다.");
+      }
+
+      // 백엔드에서 ApiResponse 형태로 에러를 보낸 경우
+      if (data && typeof data === "object") {
+        if (data.message) {
+          const errorMessage = data.message;
+          const customError = new Error(errorMessage);
+          // @ts-ignore
+          customError.response = error.response;
+          return Promise.reject(customError);
+        }
+      }
+
+      // 일반적인 HTTP 에러
+      const statusMessages: { [key: number]: string } = {
+        400: "잘못된 요청입니다.",
+        401: "인증이 필요합니다.",
+        403: "접근 권한이 없습니다.",
+        404: "요청한 리소스를 찾을 수 없습니다.",
+        500: "서버 오류가 발생했습니다.",
+        502: "게이트웨이 오류가 발생했습니다.",
+        503: "서비스를 사용할 수 없습니다.",
+      };
+
+      const message =
+        statusMessages[status] || `오류가 발생했습니다. (${status})`;
+      const customError = new Error(message);
+      // @ts-ignore
+      customError.response = error.response;
+      return Promise.reject(customError);
     }
+
+    // 응답이 없는 경우 (네트워크 에러 등)
+    if (error.request) {
+      const networkError = new Error(
+        "네트워크 오류가 발생했습니다. 인터넷 연결을 확인해주세요."
+      );
+      return Promise.reject(networkError);
+    }
+
+    // 그 외의 에러
     return Promise.reject(error);
   }
 );
